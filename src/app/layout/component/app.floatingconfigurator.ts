@@ -1,9 +1,9 @@
-import {Component, computed, inject, input} from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
-import { LayoutService } from '@/app/layout/service/layout.service';
-import {CommonModule} from "@angular/common";
+import { LayoutService } from './../../../app/layout/service/layout.service';
+import { CommonModule } from "@angular/common";
 
 @Component({
     selector: 'app-floating-configurator',

@@ -5,21 +5,27 @@ import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
 
 export const appRoutes: Routes = [
-    {
-        path: '',
-        component: AppLayout,
-        children: [
 
-            { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
-            { path: 'documentation', component: Documentation },
-            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
-        ]
-    },
+
+    // {
+    //     path: '',
+    //     component: AppLayout,
+    //     children: [
+
+    //         { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
+    //         { path: 'documentation', component: Documentation },
+    //         { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
+    //     ]
+    // },
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
 
+
+
+
     {
-        path: 'auth',
+        path: 'admin',
+
         loadChildren: () =>
             import('./app/features/auth/auth.routes')
                 .then(m => m.AUTH_ROUTES)
@@ -32,15 +38,11 @@ export const appRoutes: Routes = [
                 .then(m => m.ADMIN_ROUTES)
     },
 
-
-
     {
         path: '',
         redirectTo: 'admin/login',
         pathMatch: 'full'
     },
-
-
 
 
 

@@ -1,45 +1,69 @@
 import { Component } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from 'src/app/core/services/auth/auth';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from 'src/app/core/services/alert/alert';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { RippleModule } from 'primeng/ripple';
+import { AppFloatingConfigurator } from '../../../../app/layout/component/app.floatingconfigurator';
+import { LoginRequest, LoginResponse } from 'src/app/core/models/auth';
 @Component({
     selector: 'app-login',
-    imports: [],
+    standalone: true,
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule,
+        AppFloatingConfigurator, ReactiveFormsModule],
     templateUrl: './login.html',
     styleUrl: './login.scss',
 })
-export class Login {
+export class LoginComponent {
     loginForm!: FormGroup;
-
-
-    constructor(private authService: AuthService, private router: Router, private formBuilder: FormBuilder, private alertService: AlertService) { }
+    rememberMe: boolean = false;
+    constructor(private authService: AuthService, private router: Router, private formBuilder: FormBuilder,
+        private alertService: AlertService) { }
 
     ngOnInit(): void {
         this.loginForm = this.formBuilder.group({
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]]
+            password: ['', [Validators.required, Validators.minLength(6)]],
+            checked: [false]
         });
     }
 
 
     onSubmitLogin() {
-
-        this.authService.login({
-            email: this.loginForm.value.email,
-            password: this.loginForm.value.password
-        }).subscribe({
-            next: (res) => {
-                this.authService.saveCurrentUser(res.user);
+        if (this.loginForm.invalid) {
+            this.loginForm.markAllAsTouched();
+            return;
+        }
+        if (this.loginForm.value.checked) {
+            localStorage.setItem('rememberMe', 'true');
+        }
+        const request: LoginRequest = {
+            ...this.loginForm.getRawValue(),
+            isPlatformUser: true
+        };
+        this.authService.login(request).subscribe({
+            next: (res: LoginResponse) => {
+                console.log(res.token);
+                console.log(res.role);
+                this.authService.saveCurrentUser(res);
                 this.alertService.success('Login successful!');
-                this.router.navigate(['admin/dashboard']);
+
+                setTimeout(() => {
+                    this.router.navigate(['admin/dashboard']);
+                }, 2000);
+
             },
             error: (err) => {
-                this.alertService.error('Login failed. Please check your credentials and try again.');
-                console.log(err);
+                this.alertService.error('Login failed. Please check your credentials and try again');
             }
         });
-
     }
 
     logout() {

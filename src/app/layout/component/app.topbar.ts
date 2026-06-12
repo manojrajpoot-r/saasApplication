@@ -4,8 +4,10 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
-import { LayoutService } from '@/app/layout/service/layout.service';
-
+import { LayoutService } from '../../../app/layout/service/layout.service';
+import { AuthService } from 'src/app/core/services/auth/auth';
+import { Router } from '@angular/router';
+import { AlertService } from '@/app/core/services/alert/alert';
 @Component({
     selector: 'app-topbar',
     standalone: true,
@@ -72,10 +74,14 @@ import { LayoutService } from '@/app/layout/service/layout.service';
                         <i class="pi pi-inbox"></i>
                         <span>Messages</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                 <button
+                    type="button"
+                    class="layout-topbar-action"
+                    (click)="logout()">
+
+                    <i class="pi pi-sign-out"></i>
+                    <span>Logout</span>
+                </button>
                 </div>
             </div>
         </div>
@@ -86,10 +92,25 @@ export class AppTopbar {
 
     layoutService = inject(LayoutService);
 
+    constructor(
+        private authService: AuthService,
+        private router: Router,
+        private alertService: AlertService
+    ) { }
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({
             ...state,
             darkTheme: !state.darkTheme
         }));
+    }
+
+    logout() {
+        this.alertService.confirm('Do you want to logout?')
+            .then(result => {
+                if (result.isConfirmed) {
+                    this.authService.logout();
+                    this.router.navigate(['/admin/login']);
+                }
+            });
     }
 }

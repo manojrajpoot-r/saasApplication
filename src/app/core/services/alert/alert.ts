@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MessageService } from 'primeng/api';
-
+import Swal from 'sweetalert2';
 @Injectable({
     providedIn: 'root'
 })
@@ -42,5 +42,16 @@ export class AlertService {
 
     clear() {
         this.msgService.clear();
+    }
+
+    confirm(message: string) {
+        return Swal.fire({
+            title: 'Are you sure?',
+            text: message,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+        });
     }
 }

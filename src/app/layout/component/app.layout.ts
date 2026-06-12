@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
 import { AppFooter } from './app.footer';
-import { LayoutService } from '@/app/layout/service/layout.service';
+import { LayoutService } from './../../../app/layout/service/layout.service';
 
 @Component({
     selector: 'app-layout',
@@ -18,7 +18,6 @@ import { LayoutService } from '@/app/layout/service/layout.service';
                 <router-outlet></router-outlet>
             </div>
             <app-footer></app-footer>
-        </div>
         <div class="layout-mask"></div>
     </div> `
 })

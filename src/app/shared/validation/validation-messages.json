@@ -1,0 +1,19 @@
+{
+  "en": {
+    "required": "{field} is required",
+    "email": "Invalid email format",
+    "minlength": "{field} must be at least {value} characters",
+    "backend": {
+      "INVALID_CREDENTIALS": "Email or password is incorrect",
+      "USER_BLOCKED": "User account is blocked"
+    }
+  },
+  "hi": {
+    "required": "{field} आवश्यक है",
+    "email": "गलत ईमेल फॉर्मेट",
+    "minlength": "{field} कम से कम {value} अक्षर होना चाहिए",
+    "backend": {
+      "INVALID_CREDENTIALS": "ईमेल या पासवर्ड गलत है"
+    }
+  }
+}
