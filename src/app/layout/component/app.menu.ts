@@ -80,7 +80,13 @@ export class AppMenu {
                         ]
                     },
                     {
-                        label: 'Crud',
+                        label: 'Users',
+                        icon: 'pi pi-fw pi-user',
+                        routerLink: ['/admin/users']
+                    },
+
+                    {
+                        label: 'Tenant',
                         icon: 'pi pi-fw pi-pencil',
                         routerLink: ['/pages/crud']
                     },

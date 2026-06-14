@@ -6,5 +6,11 @@ export const AUTH_ROUTES: Routes = [
         path: 'login',
         loadComponent: () =>
             import('./login/login').then(m => m.LoginComponent)
+    },
+
+    {
+        path: 'login',
+        loadComponent: () =>
+        import('./login/login').then(m => m.LoginComponent)
     }
 ];

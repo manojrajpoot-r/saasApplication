@@ -20,23 +20,30 @@ export const appRoutes: Routes = [
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
 
-
-
-
     {
         path: 'admin',
-
         loadChildren: () =>
             import('./app/features/auth/auth.routes')
                 .then(m => m.AUTH_ROUTES)
     },
-
     {
         path: 'admin',
         loadChildren: () =>
             import('./app/features/admin/admin.routes')
                 .then(m => m.ADMIN_ROUTES)
     },
+
+    {
+        path: 'tenant',
+        loadChildren: () =>
+            import('./app/features/auth/auth.routes')
+                .then(m => m.AUTH_ROUTES)
+    },
+
+
+
+
+
 
     {
         path: '',

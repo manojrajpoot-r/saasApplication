@@ -36,35 +36,48 @@ export class LoginComponent {
     }
 
 
-    onSubmitLogin() {
-        if (this.loginForm.invalid) {
-            this.loginForm.markAllAsTouched();
-            return;
-        }
-        if (this.loginForm.value.checked) {
-            localStorage.setItem('rememberMe', 'true');
-        }
-        const request: LoginRequest = {
-            ...this.loginForm.getRawValue(),
-            isPlatformUser: true
-        };
-        this.authService.login(request).subscribe({
-            next: (res: LoginResponse) => {
-                console.log(res.token);
-                console.log(res.role);
-                this.authService.saveCurrentUser(res);
-                this.alertService.success('Login successful!');
+  onSubmitLogin() {
 
-                setTimeout(() => {
-                    this.router.navigate(['admin/dashboard']);
-                }, 2000);
-
-            },
-            error: (err) => {
-                this.alertService.error('Login failed. Please check your credentials and try again');
-            }
-        });
+    if (this.loginForm.invalid) {
+        this.loginForm.markAllAsTouched();
+        return;
     }
+
+    if (this.loginForm.value.checked) {
+        localStorage.setItem('rememberMe', 'true');
+    }
+
+    const isPlatformUser =
+        this.router.url.startsWith('/admin');
+
+    const request: LoginRequest = {
+        ...this.loginForm.getRawValue(),
+        isPlatformUser
+    };
+
+    this.authService.login(request).subscribe({
+
+        next: (res: LoginResponse) => {
+            console.log(res);
+
+            this.authService.saveCurrentUser(
+                res.data.user
+            );
+
+            this.alertService.success('Login successful!');
+
+            setTimeout(() => {
+                this.router.navigate(['/admin/dashboard']);
+            }, 2000);
+        },
+
+        error: (err) => {
+            this.alertService.error(
+                err.error?.message || 'Login failed'
+            );
+        }
+    });
+}
 
     logout() {
         this.authService.logout();

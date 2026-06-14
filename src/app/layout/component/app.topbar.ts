@@ -8,15 +8,20 @@ import { LayoutService } from '../../../app/layout/service/layout.service';
 import { AuthService } from 'src/app/core/services/auth/auth';
 import { Router } from '@angular/router';
 import { AlertService } from '@/app/core/services/alert/alert';
+import { Observable } from 'rxjs';
+import { CurrentUser } from '@/app/core/models/auth/current-user';
+
 @Component({
     selector: 'app-topbar',
     standalone: true,
     imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
+      
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
+            
             <a class="layout-topbar-logo" routerLink="/">
                 <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -38,7 +43,9 @@ import { AlertService } from '@/app/core/services/alert/alert';
                 <span>SAKAI</span>
             </a>
         </div>
-
+        <span>
+           {{ (currentUser$ | async)?.fullName | titlecase }}
+        </span>
         <div class="layout-topbar-actions">
             <div class="layout-config-menu">
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
@@ -89,9 +96,9 @@ import { AlertService } from '@/app/core/services/alert/alert';
 })
 export class AppTopbar {
     items!: MenuItem[];
-
+    currentUser$!: Observable<CurrentUser | null>;
     layoutService = inject(LayoutService);
-
+   
     constructor(
         private authService: AuthService,
         private router: Router,
@@ -102,6 +109,10 @@ export class AppTopbar {
             ...state,
             darkTheme: !state.darkTheme
         }));
+    }
+
+     ngOnInit() {
+         this.currentUser$ = this.authService.currentUser$;
     }
 
     logout() {
