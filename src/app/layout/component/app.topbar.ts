@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../../../app/layout/service/layout.service';
-import { AuthService } from 'src/app/core/services/auth/auth';
+import { AuthService } from '@/app/core/services/auth/auth.service';
 import { Router } from '@angular/router';
 import { AlertService } from '@/app/core/services/alert/alert';
 import { Observable } from 'rxjs';
@@ -17,11 +17,11 @@ import { CurrentUser } from '@/app/core/models/auth/current-user';
     imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
-      
+
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            
+
             <a class="layout-topbar-logo" routerLink="/">
                 <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -98,7 +98,7 @@ export class AppTopbar {
     items!: MenuItem[];
     currentUser$!: Observable<CurrentUser | null>;
     layoutService = inject(LayoutService);
-   
+
     constructor(
         private authService: AuthService,
         private router: Router,
@@ -111,8 +111,8 @@ export class AppTopbar {
         }));
     }
 
-     ngOnInit() {
-         this.currentUser$ = this.authService.currentUser$;
+    ngOnInit() {
+        this.currentUser$ = this.authService.currentUser$;
     }
 
     logout() {

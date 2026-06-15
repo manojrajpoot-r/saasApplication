@@ -1,16 +1,24 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-
+import { CommonModule } from '@angular/common';
 @Component({
     selector: 'app-validation-summary',
+    standalone: true,
+    imports: [CommonModule],
     template: `
-    <div *ngIf="form?.invalid && submitted" class="p-2 bg-red-50 text-red-600">
+   @if(form?.invalid && submitted) {
 
-      <p *ngFor="let error of getErrors()">
-        • {{ error }}
-      </p>
+    <div class="p-2 bg-red-50 text-red-600">
+
+        @for(error of getErrors(); track error) {
+
+            <p>• {{ error }}</p>
+
+        }
 
     </div>
+
+}
   `
 })
 export class ValidationSummaryComponent {

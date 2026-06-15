@@ -21,6 +21,12 @@ export const ADMIN_ROUTES: Routes = [
                         .then(m => m.UsersComponent)
             },
             {
+                path: 'tenants',
+                loadComponent: () =>
+                    import('./tenants/tenants')
+                        .then(m => m.TenantsComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'

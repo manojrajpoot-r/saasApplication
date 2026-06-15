@@ -88,7 +88,7 @@ export class AppMenu {
                     {
                         label: 'Tenant',
                         icon: 'pi pi-fw pi-pencil',
-                        routerLink: ['/pages/crud']
+                        routerLink: ['/admin/tenants']
                     },
                     {
                         label: 'Not Found',

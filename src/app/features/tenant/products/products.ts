@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal, ViewChild ,inject} from '@angular/core';
+import { Component, OnInit, signal, ViewChild, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UserService } from '@/app/core/services/admin/users/user';
 import { AlertService } from '@/app/core/services/alert/alert';
@@ -43,8 +43,8 @@ interface ExportColumn {
     dataKey: string;
 }
 @Component({
-    standalone:true,
-     imports: [
+    standalone: true,
+    imports: [
         CommonModule,
         TableModule,
         FormsModule,
@@ -68,14 +68,14 @@ interface ExportColumn {
     templateUrl: './products.html',
     styleUrl: './products.scss',
     providers: [MessageService, ProductService, ConfirmationService]
-    
-})
-        
-export class ProductsComponent extends BaseCrudComponent<IUser> {
-private fb = inject(FormBuilder);
- 
 
- productDialog: boolean = false;
+})
+
+export class ProductsComponent extends BaseCrudComponent<IUser> {
+    private fb = inject(FormBuilder);
+
+
+    productDialog: boolean = false;
 
     products = signal<Product[]>([]);
 
@@ -87,7 +87,7 @@ private fb = inject(FormBuilder);
 
     statuses!: any[];
 
-   @ViewChild('dt') dt!: Table;
+    @ViewChild('dt') dt!: Table;
 
     exportColumns!: ExportColumn[];
 
@@ -98,8 +98,8 @@ private fb = inject(FormBuilder);
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private userService: UserService,
-         private alert: AlertService
-    ) {   super();}
+        private alert: AlertService
+    ) { super(); }
 
     exportCSV() {
         this.dt.exportCSV();
@@ -263,8 +263,8 @@ private fb = inject(FormBuilder);
 
 
 
-    
-  userForm = this.fb.nonNullable.group({
+
+    userForm = this.fb.nonNullable.group({
         fullName: ['', Validators.required],
         email: ['', [Validators.required, Validators.email]]
     });
@@ -273,7 +273,7 @@ private fb = inject(FormBuilder);
     //     this.load();
     // }
 
-  
+
     load(): void {
         this.loading = true;
         this.userService.getAll()
@@ -294,37 +294,7 @@ private fb = inject(FormBuilder);
         this.userForm.patchValue(user);
     }
 
-submit(): void {
-    if (this.userForm.invalid) {
-        this.userForm.markAllAsTouched();
-        return;
-    }
 
-    this.isSubmitting = true;
-
-    const payload = this.userForm.getRawValue();
-
-    const request$ = this.selectedId
-        ? this.userService.update(this.selectedId, payload)
-        : this.userService.create(payload);
-
-    request$.subscribe({
-        next: () => {
-            this.alert.success(this.selectedId ? 'Updated' : 'Created');
-
-            this.userForm.reset();
-            this.selectedId = null;
-
-            this.load();
-
-            this.isSubmitting = false;
-        },
-        error: () => {
-            this.isSubmitting = false;
-            this.alert.error('Operation failed');
-        }
-    });
-}
 
     remove(id: number): void {
         this.userService.delete(id)

@@ -3,17 +3,30 @@ import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 export interface PagedResponse<T> {
-    items: T[];
-    totalCount: number;
+    data: T[];
+    totalRecords: number;
     pageNumber: number;
     pageSize: number;
 }
-
 export abstract class BaseApiService<T, TCreate, TUpdate> {
 
     protected http = inject(HttpClient);
 
     protected abstract endpoint: string;
+
+
+
+    getAllData(pageNumber = 1, pageSize = 10, search = '') {
+
+        return this.http.post<PagedResponse<T>>(
+            `${this.endpoint}/list`,
+            {
+                pageNumber,
+                pageSize,
+                search
+            }
+        );
+    }
 
     getAll(
         pageNumber = 1,
@@ -50,6 +63,12 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
     delete(id: number): Observable<void> {
         return this.http.delete<void>(
             `${this.endpoint}/${id}`
+        );
+    }
+    changeStatus(id: number, isActive: boolean) {
+        return this.http.put(
+            `${this.endpoint}/${id}/status`,
+            { isActive }
         );
     }
 }

@@ -1,1 +1,211 @@
-<p>tenants works!</p>
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="deleteselectedTenants()" [disabled]="!selectedTenants || !selectedTenants.length" />
+            </ng-template>
+
+            <ng-template #end>
+                <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+            </ng-template>
+        </p-toolbar>
+
+        <p-table
+              #dt
+              [value]="tenants()"
+            [rows]="10"
+            [columns]="cols"
+            [paginator]="true"
+            [tableStyle]="{ 'min-width': '75rem' }"
+            [(selection)]="selectedTenants"
+            [rowHover]="true"
+            dataKey="id"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tenants"
+            [showCurrentPageReport]="true"
+            [rowsPerPageOptions]="[10, 20, 30]"
+        >
+            <ng-template #caption>
+                <div class="flex items-center justify-between">
+                    <h5 class="m-0">Manage tenants</h5>
+                    <p-iconfield>
+                        <p-inputicon styleClass="pi pi-search" />
+                        <input
+                            pInputText
+                            type="text"
+                            (input)="onSearch($event)"
+                            placeholder="Search tenants..." />
+                    </p-iconfield>
+                </div>
+                </ng-template>
+
+                <ng-template #header>
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox />
+                        </th>
+
+                        <th pSortableColumn="name" style="min-width:16rem">
+                            Name
+                            <p-sortIcon field="name" />
+                        </th>
+
+                        <th pSortableColumn="email" style="min-width: 8rem">
+                            Domains
+                            <p-sortIcon field="email" />
+                        </th>
+
+
+                        <th pSortableColumn="status" style="min-width: 12rem">
+                            Status
+                            <p-sortIcon field="status" />
+                        </th>
+                       <th pSortableColumn="status" style="min-width: 12rem">
+                            Action
+                        </th>
+                        <th style="min-width: 4rem"></th>
+                    </tr>
+                </ng-template>
+                  <ng-template #body let-tenant>
+                        <tr>
+
+                        <td>
+                            <p-tableCheckbox [value]="tenant"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{ tenant.name | titlecase }}
+                        </td>
+
+                        <td>
+                            {{ tenant.subdomain }}
+                        </td>
+
+                        <td>
+                            <p-tag
+                            [value]="tenant.isActive ? 'Active' : 'Inactive'"
+                            [severity]="tenant.isActive ? 'success' : 'danger'">
+                            </p-tag>
+                        </td>
+
+                        <td class="flex gap-2">
+
+                            <p-button
+                            [icon]="tenant.isActive ? 'pi pi-lock-open' : 'pi pi-lock'"
+                            [severity]="tenant.isActive ? 'success' : 'danger'"
+                            (click)="toggleStatus(tenant)">
+                            </p-button>
+
+                            <p-button
+                            icon="pi pi-pencil"
+                            (click)="editTenant(tenant)">
+                            </p-button>
+
+                            <p-button
+                            icon="pi pi-trash"
+                            severity="danger"
+                            (click)="deleteTenant(tenant)">
+                            </p-button>
+
+                        </td>
+
+                        </tr>
+                    </ng-template>
+        </p-table>
+
+        <p-dialog
+            [(visible)]="tenantDialog"
+            [style]="{ width: '450px' }"
+            header="tenant Details"
+            [modal]="true">
+
+                <form [formGroup]="tenantForm" (ngSubmit)="onTenantSubmit()">
+
+                    <!-- BODY -->
+
+                    <div class="flex flex-col gap-6">
+
+                        <div>
+                            <label class="block font-bold mb-3">
+                               Company Name
+                            </label>
+                        <input pInputText
+                                formControlName="name"
+                                class="w-full"
+                                [appFieldError]="tenantForm.controls.name"
+                                fieldName="Name" />
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-3">
+                                SubDomain
+                            </label>
+                                <input pInputText
+                                formControlName="subdomain"
+                                class="w-full"
+                                [appFieldError]="tenantForm.controls.subDomain"
+                                fieldName="SubDomain" />
+                        </div>
+                    @if (!isEditMode) {
+                        <div>
+                            <label class="block font-bold mb-3">
+                                Tenant Name
+                            </label>
+                        <input pInputText
+                                formControlName="adminName"
+                                class="w-full"
+                                [appFieldError]="tenantForm.controls.adminName"
+                                fieldName="AdminName" />
+                        </div>
+
+                        <div>
+                            <label class="block font-bold mb-3">
+                               Tenant  Email
+                            </label>
+                            <input
+                                pInputText
+                                type="email"
+                                formControlName="adminEmail"
+                                class="w-full"
+                                [appFieldError]="tenantForm.controls.adminEmail"
+                                fieldName="AdminEmail" />
+                        </div>
+
+                        <div>
+                            <label class="block font-bold mb-3">
+                               Tenant  Password
+                            </label>
+
+                            <input
+                                pInputText
+                                type="password"
+                                formControlName="password"
+                                class="w-full"
+                                [appFieldError]="tenantForm.controls.password"
+                                fieldName="Password" />
+                        </div>
+                    }
+                    </div>
+
+                    <!-- FOOTER -->
+
+                    <div class="flex justify-end gap-2 mt-5">
+
+                        <p-button
+                            label="Cancel"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            type="button"
+                            (click)="hideDialog()">
+                        </p-button>
+
+                        <p-button
+                            [label]="selectedId ? 'Update' : 'Save'"
+                            icon="pi pi-check"
+                            type="submit">
+                        </p-button>
+
+                    </div>
+
+                </form>
+
+        </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

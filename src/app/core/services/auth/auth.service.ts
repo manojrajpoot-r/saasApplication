@@ -12,60 +12,71 @@ export class AuthService {
 
     private http = inject(HttpClient);
     private apiUrl = environment.apiUrl + '/Auth';
- 
 
-    private currentUserSubject = new BehaviorSubject<CurrentUser | null>(
-        JSON.parse(localStorage.getItem('currentUser') || 'null')
-    );
+    private getStoredUser(): CurrentUser | null {
+        try {
+            const user = localStorage.getItem('currentUser');
+
+            if (!user || user === 'undefined') {
+                return null;
+            }
+
+            return JSON.parse(user);
+        } catch (error) {
+            console.error('Invalid currentUser in localStorage', error);
+
+            localStorage.removeItem('currentUser');
+
+            return null;
+        }
+    }
+
+    private currentUserSubject =
+        new BehaviorSubject<CurrentUser | null>(
+            this.getStoredUser()
+        );
 
     currentUser$ = this.currentUserSubject.asObservable();
 
     login(data: LoginRequest): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data).pipe(
+        return this.http.post<LoginResponse>(
+            `${this.apiUrl}/login`,
+            data
+        ).pipe(
             tap(response => {
                 localStorage.setItem(
-                'token',
-                response.data.accessToken
-            );
+                    'token',
+                    response.data.accessToken
+                );
 
-            localStorage.setItem(
-                'refreshToken',
-                response.data.refreshToken ?? ''
-            );
+                localStorage.setItem(
+                    'refreshToken',
+                    response.data.refreshToken ?? ''
+                );
             })
         );
     }
 
-
     saveCurrentUser(user: CurrentUser) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem(
+            'currentUser',
+            JSON.stringify(user)
+        );
+
         this.currentUserSubject.next(user);
     }
 
     getCurrentUser(): CurrentUser | null {
         return this.currentUserSubject.value;
     }
-    refreshToken(): Observable<any> {
-
-        const payload = {
-            token: localStorage.getItem('token'),
-            refreshToken: localStorage.getItem('refreshToken')
-        };
-
-        return this.http.post<any>(`${this.apiUrl}/refresh-token`, payload).pipe(
-            tap(response => {
-                localStorage.setItem('token', response.token);
-                localStorage.setItem('refreshToken', response.refreshToken);
-            })
-        );
-    }
 
     logout(): void {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('currentUser');
-    }
 
+        this.currentUserSubject.next(null);
+    }
 
     getToken(): string | null {
         return localStorage.getItem('token');

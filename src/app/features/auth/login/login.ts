@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from 'src/app/core/services/auth/auth';
+import { AuthService } from '@/app/core/services/auth/auth.service';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from 'src/app/core/services/alert/alert';
@@ -36,48 +36,48 @@ export class LoginComponent {
     }
 
 
-  onSubmitLogin() {
+    onSubmitLogin() {
 
-    if (this.loginForm.invalid) {
-        this.loginForm.markAllAsTouched();
-        return;
-    }
-
-    if (this.loginForm.value.checked) {
-        localStorage.setItem('rememberMe', 'true');
-    }
-
-    const isPlatformUser =
-        this.router.url.startsWith('/admin');
-
-    const request: LoginRequest = {
-        ...this.loginForm.getRawValue(),
-        isPlatformUser
-    };
-
-    this.authService.login(request).subscribe({
-
-        next: (res: LoginResponse) => {
-            console.log(res);
-
-            this.authService.saveCurrentUser(
-                res.data.user
-            );
-
-            this.alertService.success('Login successful!');
-
-            setTimeout(() => {
-                this.router.navigate(['/admin/dashboard']);
-            }, 2000);
-        },
-
-        error: (err) => {
-            this.alertService.error(
-                err.error?.message || 'Login failed'
-            );
+        if (this.loginForm.invalid) {
+            this.loginForm.markAllAsTouched();
+            return;
         }
-    });
-}
+
+        if (this.loginForm.value.checked) {
+            localStorage.setItem('rememberMe', 'true');
+        }
+
+        const isPlatformUser =
+            this.router.url.startsWith('/admin');
+
+        const request: LoginRequest = {
+            ...this.loginForm.getRawValue(),
+            isPlatformUser
+        };
+
+        this.authService.login(request).subscribe({
+
+            next: (res: LoginResponse) => {
+                console.log(res);
+
+                this.authService.saveCurrentUser(
+                    res.data.user
+                );
+
+                this.alertService.success('Login successful!');
+
+                setTimeout(() => {
+                    this.router.navigate(['/admin/dashboard']);
+                }, 2000);
+            },
+
+            error: (err) => {
+                this.alertService.error(
+                    err.error?.message || 'Login failed'
+                );
+            }
+        });
+    }
 
     logout() {
         this.authService.logout();
