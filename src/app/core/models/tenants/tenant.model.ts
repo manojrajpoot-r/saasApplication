@@ -1,7 +1,7 @@
 export interface ITenant {
     id: number;
     name: string;
-    subDomain: string;
+    subdomain: string;
     adminName: string;
     adminEmail: string;
     password: string;
@@ -10,7 +10,7 @@ export interface ITenant {
 
 export interface ITenantRequest {
     name: string;
-    subDomain: string;
+    subdomain: string;
     adminName: string;
     adminEmail: string;
     password: string;

@@ -1,0 +1,28 @@
+<label class="block font-bold mb-3">
+    {{ label }}
+</label>
+
+<div *ngFor="let control of formArray.controls; let i = index" class="flex gap-2 mb-2 card">
+
+    <input
+        pInputText
+        class="w-full"
+      [formControl]="getControl(i)">
+
+    <button
+        pButton
+        type="button"
+        icon="pi pi-plus"
+        (click)="addField()">
+    </button>
+
+    <button
+        pButton
+        type="button"
+        icon="pi pi-minus"
+        severity="danger"
+        (click)="removeField(i)"
+        [disabled]="formArray.length === 1">
+    </button>
+
+</div>

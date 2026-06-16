@@ -223,7 +223,7 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     }
 
     toggleStatus(user: any) {
-        this.userService.changeStatus(user.id, !user.isActive)
+        this.userService.changeStatus(user.id)
             .subscribe(() => {
                 this.alert.success('Status Updated');
             });

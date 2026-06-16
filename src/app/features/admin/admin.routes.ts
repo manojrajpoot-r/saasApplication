@@ -15,6 +15,18 @@ export const ADMIN_ROUTES: Routes = [
                         .then(m => m.Dashboard)
             },
             {
+                path: 'roles',
+                loadComponent: () =>
+                    import('./roles/roles')
+                        .then(m => m.RolesComponent)
+            },
+            {
+                path: 'roles/:id/permissions',
+                loadComponent: () =>
+                    import('./roles/role-permission/role-permission')
+                        .then(m => m.RolePermissionComponent)
+            },
+            {
                 path: 'users',
                 loadComponent: () =>
                     import('./users/users')
@@ -25,6 +37,12 @@ export const ADMIN_ROUTES: Routes = [
                 loadComponent: () =>
                     import('./tenants/tenants')
                         .then(m => m.TenantsComponent)
+            },
+            {
+                path: 'permissions',
+                loadComponent: () =>
+                    import('./permissions/permissions')
+                        .then(m => m.PermissionsComponent)
             },
             {
                 path: '',

@@ -16,7 +16,7 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
 
 
 
-    getAllData(pageNumber = 1, pageSize = 10, search = '') {
+    getAll(pageNumber = 1, pageSize = 10, search = '') {
 
         return this.http.post<PagedResponse<T>>(
             `${this.endpoint}/list`,
@@ -28,22 +28,7 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
         );
     }
 
-    getAll(
-        pageNumber = 1,
-        pageSize = 10,
-        search = ''
-    ): Observable<PagedResponse<T>> {
 
-        const params = new HttpParams()
-            .set('pageNumber', pageNumber)
-            .set('pageSize', pageSize)
-            .set('search', search);
-
-        return this.http.get<PagedResponse<T>>(
-            this.endpoint,
-            { params }
-        );
-    }
 
     getById(id: number): Observable<T> {
         return this.http.get<T>(`${this.endpoint}/${id}`);
@@ -65,10 +50,10 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
             `${this.endpoint}/${id}`
         );
     }
-    changeStatus(id: number, isActive: boolean) {
-        return this.http.put(
-            `${this.endpoint}/${id}/status`,
-            { isActive }
+    changeStatus(id: number) {
+        return this.http.patch(
+            `${this.endpoint}/status/${id}`,
+            {}
         );
     }
 }

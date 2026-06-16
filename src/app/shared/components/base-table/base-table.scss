@@ -1,0 +1,14 @@
+/* src/app/shared/components/base-table/base-table.component.scss */
+
+:host {
+    display: block;
+}
+
+:host ::ng-deep .p-button {
+    min-width: 2.5rem;
+}
+
+:host ::ng-deep .p-tag {
+    min-width: 80px;
+    justify-content: center;
+}

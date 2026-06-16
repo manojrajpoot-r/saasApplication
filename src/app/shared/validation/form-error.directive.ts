@@ -1,11 +1,9 @@
-import {
-    Directive, Input, OnInit,
-    ElementRef, Renderer2
-} from '@angular/core';
+import { Directive, Input, OnInit, ElementRef, Renderer2 } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { ValidationService } from './validation.service';
 
 @Directive({
+    standalone: true,
     selector: '[appFieldError]'
 })
 export class FormErrorDirective implements OnInit {

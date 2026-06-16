@@ -80,15 +80,25 @@ export class AppMenu {
                         ]
                     },
                     {
+                        label: 'Roles',
+                        icon: 'pi pi-fw pi-pencil',
+                        routerLink: ['/admin/roles']
+                    },
+                    {
                         label: 'Users',
                         icon: 'pi pi-fw pi-user',
                         routerLink: ['/admin/users']
                     },
 
                     {
-                        label: 'Tenant',
+                        label: 'Tenants',
                         icon: 'pi pi-fw pi-pencil',
                         routerLink: ['/admin/tenants']
+                    },
+                    {
+                        label: 'Permissions',
+                        icon: 'pi pi-fw pi-pencil',
+                        routerLink: ['/admin/permissions']
                     },
                     {
                         label: 'Not Found',
