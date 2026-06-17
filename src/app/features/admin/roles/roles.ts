@@ -12,24 +12,19 @@ import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
 import { IRole } from '@/app/core/models/roles/role.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { RatingModule } from 'primeng/rating';
-
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
-
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormErrorDirective } from '@/app/shared/validation/form-error.directive';
@@ -41,6 +36,8 @@ import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operato
 import { tap } from 'rxjs/operators';
 import { combineLatest, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { ActionType } from '@/app/shared/models/table-action.model';
+import { ActionEvent } from '@/app/shared/models/table-action.model';
 @Component({
     standalone: true,
     imports: [
@@ -93,6 +90,14 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
     isEditMode = false;
     header: string = "Role Details"
 
+    load(): void {
+        // implementation
+    }
+
+    refreshroles(): void {
+        this.search.set(this.search()); // re-trigger API
+    }
+
     columns: TableColumn[] = [
         {
             field: 'name',
@@ -110,42 +115,34 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
 
     actions: TableAction[] = [
         {
-            action: 'assignPermission',
-            icon: 'pi pi-shield',
-            severity: 'warning'
-        },
-        {
-            action: 'toggleStatus',
-            icon: 'pi pi-check',
-            severity: 'success'
-        },
-        {
             action: 'edit',
             icon: 'pi pi-pencil',
-            severity: 'info'
+            severity: 'info',
+            tooltip: 'Edit'
         },
         {
             action: 'delete',
             icon: 'pi pi-trash',
-            severity: 'danger'
+            severity: 'danger',
+            tooltip: 'Delete'
+        },
+        {
+            action: 'assignPermission',
+            icon: 'pi pi-shield',
+            severity: 'warn',
+            tooltip: 'Assign Permission'
         }
     ];
 
 
-    load(): void {
-        // implementation
-    }
-
-    refreshroles(): void {
-        this.search.set(this.search()); // re-trigger API
-    }
-
-    handleAction(event: { action: string; row: IRole; }) {
+    handleAction(event: ActionEvent<IRole>): void {
         const role = event.row;
+
         switch (event.action) {
             case 'assignPermission':
                 this.assignPermission(role);
                 break;
+
             case 'edit':
                 this.handleEdit(role);
                 break;
@@ -159,6 +156,9 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
                 break;
         }
     }
+
+
+
 
     onSearch(event: Event) {
         this.search.set((event.target as HTMLInputElement).value);
@@ -329,6 +329,10 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
     }
 
     assignPermission(role: IRole) {
-        this.router.navigate(['admin/roles', role.id, 'permissions']);
+        this.router.navigate([
+            'admin/roles',
+            role.id,
+            'permissions'
+        ]);
     }
 }

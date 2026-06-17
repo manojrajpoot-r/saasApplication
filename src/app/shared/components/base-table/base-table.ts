@@ -9,8 +9,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { TableColumn } from '../../models/table-column.model';
-import { TableAction } from '../../models/table-action.model';
-
+import { TableAction, ActionType, ActionEvent } from '../../models/table-action.model';
+import { TooltipModule } from 'primeng/tooltip';
+import { ButtonSeverity } from 'primeng/button';
 @Component({
     selector: 'app-base-table',
     standalone: true,
@@ -22,7 +23,8 @@ import { TableAction } from '../../models/table-action.model';
         TagModule,
         InputTextModule,
         InputIconModule,
-        IconFieldModule
+        IconFieldModule,
+        TooltipModule
     ],
     templateUrl: './base-table.html',
     styleUrl: './base-table.scss'
@@ -68,11 +70,17 @@ export class BaseTableComponent<T> {
     @Output()
     pageChange = new EventEmitter<any>();
 
+
     @Output()
-    actionClick = new EventEmitter<{
-        action: string;
-        row: T;
-    }>();
+    actionClick = new EventEmitter<ActionEvent<T>>();
+
+    onAction(action: ActionType, row: T): void {
+        this.actionClick.emit({
+            action,
+            row
+        });
+    }
+
 
     globalSearch = '';
 
@@ -86,16 +94,7 @@ export class BaseTableComponent<T> {
         this.search.emit(value);
     }
 
-    onAction(
-        action: string,
-        row: T
-    ) {
 
-        this.actionClick.emit({
-            action,
-            row
-        });
-    }
 
     exportCSV() {
 

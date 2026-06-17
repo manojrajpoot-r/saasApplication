@@ -33,7 +33,8 @@ import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 import { tap } from 'rxjs/operators';
 import { combineLatest, of } from 'rxjs';
-
+import { ActionType } from '@/app/shared/models/table-action.model';
+import { ActionEvent } from '@/app/shared/models/table-action.model';
 @Component({
     standalone: true,
     imports: [
@@ -81,6 +82,13 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
     isEditMode = false;
     header: string = "Tenant Details";
 
+    load(): void {
+        // implementation
+    }
+
+    refreshtenants(): void {
+        this.search.set(this.search()); // re-trigger API
+    }
     columns: TableColumn[] = [
         {
             field: 'name',
@@ -102,50 +110,47 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
 
     actions: TableAction[] = [
         {
-            action: 'toggleStatus',
-            icon: 'pi pi-lock',
-            severity: 'success'
-        },
-        {
             action: 'edit',
             icon: 'pi pi-pencil',
-            severity: 'info'
+            severity: 'info',
+            tooltip: 'Edit'
         },
         {
             action: 'delete',
             icon: 'pi pi-trash',
-            severity: 'danger'
+            severity: 'danger',
+            tooltip: 'Delete'
+        },
+
+        {
+            action: 'toggleStatus',
+            icon: 'pi pi-power-off',
+            severity: 'warn',
+            tooltip: 'Toggle Status'
+
         }
+
     ];
 
-
-    load(): void {
-        // implementation
-    }
-
-    refreshtenants(): void {
-        this.search.set(this.search()); // re-trigger API
-    }
-
-    handleAction(event: { action: string; row: ITenant; }) {
-
-        const tenant = event.row;
+    handleAction(event: ActionEvent<ITenant>): void {
+        const role = event.row;
 
         switch (event.action) {
-
             case 'edit':
-                this.handleEdit(tenant);
+                this.handleEdit(role);
                 break;
 
             case 'delete':
-                this.handleDelete(tenant);
+                this.handleDelete(role);
                 break;
 
             case 'toggleStatus':
-                this.toggleStatus(tenant);
+                this.toggleStatus(role);
                 break;
         }
     }
+
+
 
     onSearch(event: Event) {
         this.search.set((event.target as HTMLInputElement).value);

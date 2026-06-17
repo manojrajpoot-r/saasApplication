@@ -1,5 +1,28 @@
+export type ActionType =
+    | 'edit'
+    | 'delete'
+    | 'toggleStatus'
+    | 'assignPermission';
+
+export type SeverityType =
+    | 'secondary'
+    | 'success'
+    | 'info'
+    | 'warn'
+    | 'help'
+    | 'danger'
+    | 'contrast';
+
 export interface TableAction {
-    action: 'edit' | 'delete' | 'toggleStatus' | 'assignPermission';
+    action: ActionType;
     icon: string;
-    severity?: 'success' | 'info' | 'warning' | 'danger' | 'secondary';
+    severity?: SeverityType;
+    tooltip?: string;
+    visible?: boolean;
+    disabled?: boolean;
+}
+
+export interface ActionEvent<T> {
+    action: ActionType;
+    row: T;
 }

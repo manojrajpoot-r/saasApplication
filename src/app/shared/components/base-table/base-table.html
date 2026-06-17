@@ -152,16 +152,14 @@
 
                 <div class="flex gap-2">
 
-                    <p-button
-                        *ngFor="let action of actions"
-                        [icon]="action.icon"
-                        [severity]="action.severity"
-                        (onClick)="onAction(
-                            action.action,
-                            row
-                        )">
-
-                    </p-button>
+           <p-button
+                *ngFor="let action of actions"
+                [icon]="action.icon"
+                [severity]="action.severity"
+                [disabled]="action.disabled"
+                [pTooltip]="action.tooltip"
+                (onClick)="onAction(action.action, row)">
+            </p-button>
 
                 </div>
 
