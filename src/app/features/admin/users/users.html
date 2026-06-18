@@ -1,165 +1,57 @@
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="deleteSelectedUsers()" [disabled]="!selectedUsers || !selectedUsers.length" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="handleDeleteselected()" [disabled]="!selectedCheckBox || !selectedCheckBox.length" />
             </ng-template>
 
-            <ng-template #end>
-                <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
-            </ng-template>
+
         </p-toolbar>
 
-        <p-table
-              #dt
-              [value]="users()"
-            [rows]="10"
-            [columns]="cols"
-            [paginator]="true"
-            [tableStyle]="{ 'min-width': '75rem' }"
-            [(selection)]="selectedUsers"
-            [rowHover]="true"
-            dataKey="id"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-            [showCurrentPageReport]="true"
-            [rowsPerPageOptions]="[10, 20, 30]"
-        >
-            <ng-template #caption>
-                <div class="flex items-center justify-between">
-                    <h5 class="m-0">Manage Users</h5>
-                    <p-iconfield>
-                        <p-inputicon styleClass="pi pi-search" />
-                        <input
-                            pInputText
-                            type="text"
-                            (input)="onSearch($event)"
-                            placeholder="Search users..." />
-                    </p-iconfield>
-                </div>
-                </ng-template>
-
-                <ng-template #header>
-                    <tr>
-                        <th style="width: 3rem">
-                            <p-tableHeaderCheckbox />
-                        </th>
-
-                        <th pSortableColumn="name" style="min-width:16rem">
-                            Name
-                            <p-sortIcon field="name" />
-                        </th>
-
-                        <th pSortableColumn="email" style="min-width: 8rem">
-                            Email
-                            <p-sortIcon field="email" />
-                        </th>
 
 
-                        <th pSortableColumn="status" style="min-width: 12rem">
-                            Status
-                            <p-sortIcon field="status" />
-                        </th>
-                       <th pSortableColumn="status" style="min-width: 12rem">
-                            Action
-                        </th>
-                        <th style="min-width: 4rem"></th>
-                    </tr>
-                </ng-template>
-                  <ng-template #body let-user>
-                        <tr>
 
-                        <td>
-                            <p-tableCheckbox [value]="user"></p-tableCheckbox>
-                        </td>
+        <app-base-table
+            [data]="users()"
+            [columns]="columns"
+            [actions]="actions"
+            [selection]="selectedCheckBox ?? []"
+            (selectionChange)="selectedCheckBox = $event"
+            (search)="search.set($event)"
+            (actionClick)="handleAction($event)">
+        </app-base-table>
 
-                        <td>
-                            {{ user.fullName | titlecase }}
-                        </td>
-
-                        <td>
-                            {{ user.email }}
-                        </td>
-
-                        <td>
-                            <p-tag
-                            [value]="user.isActive ? 'Active' : 'Inactive'"
-                            [severity]="user.isActive ? 'success' : 'danger'">
-                            </p-tag>
-                        </td>
-
-                        <td class="flex gap-2">
-
-                            <p-button
-                            [icon]="user.isActive ? 'pi pi-lock-open' : 'pi pi-lock'"
-                            [severity]="user.isActive ? 'success' : 'danger'"
-                            (click)="toggleStatus(user)">
-                            </p-button>
-
-                            <p-button
-                            icon="pi pi-pencil"
-                            (click)="editUser(user)">
-                            </p-button>
-
-                            <p-button
-                            icon="pi pi-trash"
-                            severity="danger"
-                            (click)="deleteUser(user)">
-                            </p-button>
-
-                        </td>
-
-                        </tr>
-                    </ng-template>
-        </p-table>
 
         <p-dialog
-            [(visible)]="userDialog"
+            [(visible)]="handleDialog"
             [style]="{ width: '450px' }"
-            header="User Details"
+            header={{header}}
             [modal]="true">
 
-                <form [formGroup]="userForm" (ngSubmit)="onUserSubmit()">
+                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
 
                     <!-- BODY -->
 
                     <div class="flex flex-col gap-6">
 
-                        <div>
-                            <label class="block font-bold mb-3">
-                                Name
-                            </label>
-                        <input pInputText
-                                formControlName="fullName"
-                                class="w-full"
-                                [appFieldError]="userForm.controls.fullName"
-                                fieldName="Name" />
-                        </div>
 
-                        <div>
-                            <label class="block font-bold mb-3">
-                                Email
-                            </label>
-                            <input
-                                pInputText
-                                type="email"
-                                formControlName="email"
-                                class="w-full"
-                                [appFieldError]="userForm.controls.email"
-                                fieldName="Email" />
-                        </div>
 
-                        <div>
-                            <label class="block font-bold mb-3">
-                                Password
-                            </label>
 
-                            <input
-                                pInputText
-                                type="password"
-                                formControlName="password"
-                                class="w-full"
-                                [appFieldError]="userForm.controls.password"
-                                fieldName="Password" />
-                        </div>
+
+                            <div class="mb-3">
+                                <label class="block font-bold mb-2">Full Name</label>
+                                <input pInputText formControlName="fullName" class="w-full">
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label class="block font-bold mb-2">Email </label>
+                                <input type="email" pInputText formControlName="email" class="w-full">
+                            </div>
+                             <div class="mb-3">
+                                <label class="block font-bold mb-2">Password </label>
+                                <input type="password" pInputText formControlName="password" class="w-full">
+                            </div>
+
 
                     </div>
 

@@ -1,4 +1,7 @@
 
+import { BaseTableComponent } from '@/app/shared/components/base-table/base-table';
+import { TableColumn } from '@/app/shared/models/table-column.model';
+import { TableAction } from '@/app/shared/models/table-action.model';
 import { Component, OnInit, signal, ViewChild, inject, computed, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UserService } from '@/app/core/services/admin/users/user';
@@ -6,23 +9,19 @@ import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
 import { IUser } from '@/app/core/models/users/user.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
+import { FormsModule, FormArray, FormControl } from '@angular/forms';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { RatingModule } from 'primeng/rating';
-import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
-import { TagModule } from 'primeng/tag';
-import { InputIconModule } from 'primeng/inputicon';
-import { IconFieldModule } from 'primeng/iconfield';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormErrorDirective } from '@/app/shared/validation/form-error.directive';
@@ -31,139 +30,196 @@ import { takeUntil } from 'rxjs/operators';
 import { forkJoin, Subject } from 'rxjs';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
+import { combineLatest, of } from 'rxjs';
+import { DynamicInputArrayComponent } from '@/app/shared/dynamic-input-array/dynamic-input-array';
 
-
-
-interface Column {
-    field: string;
-    header: string;
-    customExportHeader?: string;
-}
-
-interface ExportColumn {
-    title: string;
-    dataKey: string;
-}
 @Component({
     standalone: true,
     imports: [
         ReactiveFormsModule,
         CommonModule,
-        TableModule,
         FormsModule,
-        ButtonModule,
         RippleModule,
         ToastModule,
         ToolbarModule,
         RatingModule,
-        InputTextModule,
         TextareaModule,
         SelectModule,
         RadioButtonModule,
         InputNumberModule,
+        ButtonModule,
+        InputTextModule,
         DialogModule,
-        TagModule,
-        InputIconModule,
-        IconFieldModule,
         ConfirmDialogModule,
         FormErrorDirective,
-        ValidationSummaryComponent
+        ValidationSummaryComponent,
+        BaseTableComponent,
+        DynamicInputArrayComponent
     ],
+
     selector: 'app-users',
     templateUrl: './users.html',
     styleUrl: './users.scss',
     providers: [MessageService, ConfirmationService]
 })
+
+
+
 export class UsersComponent extends BaseCrudComponent<IUser> {
     private fb = inject(FormBuilder);
     private userService = inject(UserService);
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
 
-
-    userDialog: boolean = false;
+    handleDialog: boolean = false;
     user!: IUser;
     submitted: boolean = false;
-    selectedUsers!: IUser[] | null;
+    selectedCheckBox!: IUser[] | null;
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
     search = signal('');
+    refreshTrigger = signal(0);
+    isEditMode = false;
+    header: string = "user Details";
 
-    @ViewChild('dt') dt!: Table;
+    columns: TableColumn[] = [
+        {
+            field: 'fullName',
+            header: 'Full Name',
+            sortable: true
+        },
 
-    exportCSV() {
-        this.dt.exportCSV();
-    }
+        {
+            field: 'email',
+            header: 'Email',
+            sortable: true,
 
-    exportColumns!: ExportColumn[];
+        }
+    ];
 
-    cols!: Column[];
+    actions: TableAction[] = [
+
+        {
+            action: 'edit',
+            icon: 'pi pi-pencil',
+            severity: 'info'
+        },
+        {
+            action: 'delete',
+            icon: 'pi pi-trash',
+            severity: 'danger'
+        }
+    ];
 
 
     load(): void {
         // implementation
     }
 
+    refreshusers(): void {
+        this.search.set(this.search()); // re-trigger API
+    }
+
+    handleAction(event: { action: string; row: IUser; }) {
+
+        const user = event.row;
+
+        switch (event.action) {
+
+            case 'edit':
+                this.handleEdit(user);
+                break;
+
+            case 'delete':
+                this.handleDelete(user);
+                break;
+
+
+        }
+    }
+
     onSearch(event: Event) {
         this.search.set((event.target as HTMLInputElement).value);
     }
 
-    // USERS STREAM (PROPER CLEAN SIGNAL)
+
+
     users = toSignal(
-        toObservable(this.search).pipe(
+        toObservable(
+            computed(() => ({
+                search: this.search(),
+                refresh: this.refreshTrigger()
+            }))
+        ).pipe(
             debounceTime(300),
-            distinctUntilChanged(),
-            switchMap(s => this.userService.getAll(1, 10, s)),
-            map(res => res.data)
+
+            switchMap(({ search }) =>
+                this.userService.getAll(1, 10, search)
+            ),
+
+            tap(res => {
+                console.log('API Response:', res);
+                console.log(res.data);
+            }),
+
+            map(res => res.data ?? [])
         ),
-        { initialValue: [] as IUser[] }
+        { initialValue: [] }
     );
 
-    // FORM
-    userForm = this.fb.nonNullable.group({
+    handleForm = this.fb.nonNullable.group({
         fullName: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required]
+        email: ['', Validators.required],
+        password: ['', Validators.required],
+
+
     });
 
 
 
     openNew() {
+        this.isEditMode = false;
         this.selectedId = null;
         this.submitted = false;
+        this.handleForm.reset();
 
-        this.userForm.reset();
-        this.userForm.controls.password.setValidators([Validators.required]);
-        this.userForm.controls.password.updateValueAndValidity();
-
-        this.userDialog = true;
+        this.handleDialog = true;
     }
+
     hideDialog(): void {
-        this.userDialog = false;
+        this.handleDialog = false;
         this.submitted = false;
         this.selectedId = null;
-        this.userForm.reset();
+        this.handleForm.reset();
     }
-    editUser(user: any) {
+
+    handleEdit(user: IUser) {
+        this.isEditMode = true;
         this.selectedId = user.id;
 
-        this.userForm.patchValue({
-            fullName: user.fullName,
-            email: user.email,
-            password: ''
+        this.handleForm.patchValue({
+            fullName: user.fullName
         });
 
-        this.userForm.controls.password.clearValidators();
-        this.userForm.controls.password.updateValueAndValidity();
+        this.handleForm.patchValue({
+            email: user.email
+        });
 
-        this.userDialog = true;
+        this.handleDialog = true;
     }
 
-    onUserSubmit() {
+    handleSubmit() {
         this.submitted = true;
-        if (this.userForm.invalid) return;
+        if (this.handleForm.invalid) return;
 
-        const payload = this.userForm.getRawValue();
+        const formValue = this.handleForm.getRawValue();
+
+        const payload = {
+            fullName: formValue.fullName,
+            email: formValue.email,
+            password: formValue.password
+        };
 
         const req = this.selectedId
             ? this.userService.update(this.selectedId, payload)
@@ -172,7 +228,8 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
         req.subscribe({
             next: () => {
                 this.alert.success('Saved Successfully');
-                this.userDialog = false;
+                this.handleDialog = false;
+                this.refreshTrigger.update(v => v + 1);
             },
             error: (err) => {
                 console.log(err);
@@ -180,29 +237,28 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             }
         });
     }
-    refreshUsers(): void {
-        this.search.set(this.search()); // re-trigger API
-    }
-    deleteSelectedUsers(): void {
 
-        if (!this.selectedUsers || this.selectedUsers.length === 0) return;
+    handleDeleteselected(): void {
+
+        if (!this.selectedCheckBox || this.selectedCheckBox.length === 0) return;
 
         this.confirm.confirm({
-            message: `Are you sure you want to delete ${this.selectedUsers.length} users?`,
+            message: `Are you sure you want to delete ${this.selectedCheckBox.length} users?`,
             header: 'Confirm Delete',
             icon: 'pi pi-exclamation-triangle',
 
             accept: () => {
 
-                const deleteRequests = this.selectedUsers!.map(user =>
+                const deleteRequests = this.selectedCheckBox!.map(user =>
                     this.userService.delete(user.id)
                 );
 
                 forkJoin(deleteRequests).subscribe({
                     next: () => {
-                        this.alert.success('Users deleted successfully');
-                        this.selectedUsers = null;
-                        this.refreshUsers();
+                        this.alert.success('users deleted successfully');
+                        this.selectedCheckBox = null;
+                        this.refreshusers();
+                        this.refreshTrigger.update(v => v + 1);
                     },
                     error: () => {
                         this.alert.error('Some deletions failed');
@@ -211,24 +267,36 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             }
         });
     }
-    deleteUser(user: any) {
-        this.confirm.confirm({
-            message: 'Delete user?',
-            accept: () => {
-                this.userService.delete(user.id).subscribe(() => {
-                    this.alert.success('Deleted');
-                });
+
+    handleDelete(user: IUser) {
+
+        this.alert.confirm(
+            `Do you want to delete "${user.fullName}"?`
+        ).then(result => {
+
+            if (!result.isConfirmed) {
+                return;
             }
+
+            this.userService.delete(user.id).subscribe({
+                next: () => {
+                    this.alert.success(
+                        `"${user.fullName}" deleted successfully`
+                    );
+
+                    this.refreshTrigger.update(v => v + 1);
+                },
+                error: () => {
+                    this.alert.error(
+                        `Failed to delete "${user.fullName}"`
+                    );
+                }
+            });
+
         });
     }
 
-    toggleStatus(user: any) {
-        this.userService.changeStatus(user.id)
-            .subscribe(() => {
-                this.alert.success('Status Updated');
-            });
-    }
+
+
+
 }
-
-
-

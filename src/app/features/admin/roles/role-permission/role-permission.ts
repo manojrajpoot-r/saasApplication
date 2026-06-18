@@ -127,9 +127,9 @@ export class RolePermissionComponent implements OnInit {
                 next: (res: any) => {
                     const assignedPermissions =
                         (res?.data || [])
-                            .map((x: string) =>
-                                x.trim().toLowerCase()
-                            );
+                            .map((x: any) => x?.name ?? '')
+                            .filter(Boolean)
+                            .map((x: string) => x.trim().toLowerCase());
 
                     this.permissions.forEach(group => {
                         group.items.forEach((item: any) => {
@@ -137,10 +137,10 @@ export class RolePermissionComponent implements OnInit {
                                 assignedPermissions.includes(
                                     item.name.trim().toLowerCase()
                                 );
-
                         });
-
                     });
+
+
                     this.loading = false;
                     this.cdr.detectChanges();
                 },

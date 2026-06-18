@@ -2,8 +2,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-export interface PagedResponse<T> {
-    data: T[];
+
+
+export interface ApiResponse<T> {
+    success: boolean;
+    message?: string;
+    data: T;
     totalRecords: number;
     pageNumber: number;
     pageSize: number;
@@ -16,9 +20,9 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
 
 
 
-    getAll(pageNumber = 1, pageSize = 10, search = '') {
 
-        return this.http.post<PagedResponse<T>>(
+    getAll(pageNumber = 1, pageSize = 10, search = '') {
+        return this.http.post<ApiResponse<T[]>>(
             `${this.endpoint}/list`,
             {
                 pageNumber,
@@ -27,7 +31,6 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
             }
         );
     }
-
 
 
     getById(id: number): Observable<T> {
