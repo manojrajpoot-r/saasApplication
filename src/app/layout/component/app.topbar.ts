@@ -116,12 +116,18 @@ export class AppTopbar {
     }
 
     logout() {
-        this.alertService.confirm('Do you want to logout?')
-            .then(result => {
-                if (result.isConfirmed) {
-                    this.authService.logout();
+        const isPlatformUser = this.authService.isPlatformUser();
+        this.alertService.confirm(
+            'Do you want to logout?'
+        ).then(result => {
+            if (result.isConfirmed) {
+                this.authService.logout();
+                if (isPlatformUser) {
                     this.router.navigate(['/admin/login']);
+                } else {
+                    this.router.navigate(['/tenant/login']);
                 }
-            });
+            }
+        });
     }
 }

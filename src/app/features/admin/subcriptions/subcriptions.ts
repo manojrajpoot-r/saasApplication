@@ -1,14 +1,11 @@
 
-
 import { BaseTableComponent } from '@/app/shared/components/base-table/base-table';
 import { TableColumn } from '@/app/shared/models/table-column.model';
 import { TableAction } from '@/app/shared/models/table-action.model';
 import { Component, OnInit, signal, ViewChild, inject, computed, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { TenantService } from '@/app/core/services/admin/tenants/tenant';
 import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
-import { ITenant } from '@/app/core/models/tenants/tenant.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,8 +30,19 @@ import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 import { tap } from 'rxjs/operators';
 import { combineLatest, of } from 'rxjs';
+import { Router } from '@angular/router';
 import { ActionType } from '@/app/shared/models/table-action.model';
 import { ActionEvent } from '@/app/shared/models/table-action.model';
+import { SubcriptionService } from '@/app/core/services/admin/subcriptions/subcription';
+import { ISubcription } from '@/app/core/models/subcriptions/subcription.model';
+
+import { PlanService } from '@/app/core/services/admin/plans/plan';
+import{TenantService} from '@/app/core/services/admin/tenants/tenant';
+
+import{ IPlan } from '@/app/core/models/plans/plan.model';
+import { ISubcriptionRequest } from '@/app/core/models/subcriptions/subcription.model';
+import { IPlanRequest } from '@/app/core/models/plans/plan.model';
+import { NgControl } from '@angular/forms';
 @Component({
     standalone: true,
     imports: [
@@ -55,53 +63,71 @@ import { ActionEvent } from '@/app/shared/models/table-action.model';
         ConfirmDialogModule,
         FormErrorDirective,
         ValidationSummaryComponent,
-        BaseTableComponent
+        BaseTableComponent,
+
+
+
+
     ],
-    selector: 'app-tenants',
-    templateUrl: './tenants.html',
-    styleUrl: './tenants.scss',
+
+  selector: 'app-subcriptions',
+  templateUrl: './subcriptions.html',
+  styleUrl: './subcriptions.scss',
     providers: [MessageService, ConfirmationService]
 })
 
 
 
-export class TenantsComponent extends BaseCrudComponent<ITenant> {
+export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
     private fb = inject(FormBuilder);
-    private tenantService = inject(TenantService);
+    private subcriptionService = inject(SubcriptionService);
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
-
+    private router = inject(Router);
+    private planService = inject(PlanService);
+    private tenantService = inject(TenantService);
     handleDialog: boolean = false;
-    tenant!: ITenant;
+    subcription!: ISubcription;
     submitted: boolean = false;
-    selectedCheckBox!: ITenant[] | null;
+    selectedCheckBox!: ISubcription[] | null;
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
     search = signal('');
     refreshTrigger = signal(0);
     isEditMode = false;
-    header: string = "Tenant Details";
+    header: string = "Subcription Details";
+   plans = signal<any[]>([]);
+    tenants = signal<any[]>([]);
 
+    ngOnInit(): void {
+    this.loadPlan();
+    this.loadTenant();
+}
     load(): void {
         // implementation
     }
 
-    refreshtenants(): void {
+    refreshplans(): void {
         this.search.set(this.search()); // re-trigger API
     }
+
     columns: TableColumn[] = [
         {
-            field: 'name',
-            header: 'Name',
+            field: 'tenantId',
+            header: 'Tenant ID',
             sortable: true
         },
+
         {
-            field: 'subdomain',
-            header: 'Domain',
+            field: 'planId',
+            header: 'Plan ID',
             sortable: true
         },
+
+
+
         {
-            field: 'isActive',
+            field: 'TenantSubscriptions',
             header: 'Status',
             sortable: true,
             type: 'tag'
@@ -128,28 +154,30 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
             severity: 'danger',
             tooltip: 'Delete'
         },
-
-
-
+    
     ];
 
-    handleAction(event: ActionEvent<ITenant>): void {
-        const role = event.row;
+
+    handleAction(event: ActionEvent<ISubcription>): void {
+        const subcription = event.row;
 
         switch (event.action) {
+           
+
             case 'edit':
-                this.handleEdit(role);
+                this.handleEdit(subcription);
                 break;
 
             case 'delete':
-                this.handleDelete(role);
+                this.handleDelete(subcription);
                 break;
 
             case 'toggleStatus':
-                this.toggleStatus(role);
+                this.toggleStatus(subcription);
                 break;
         }
     }
+
 
 
 
@@ -157,7 +185,7 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         this.search.set((event.target as HTMLInputElement).value);
     }
 
-    tenants = toSignal(
+    subcriptions = toSignal(
         toObservable(
             computed(() => ({
                 search: this.search(),
@@ -166,22 +194,44 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         ).pipe(
             debounceTime(300),
             switchMap(({ search }) =>
-                this.tenantService.getAll(1, 10, search)
+                this.subcriptionService.getAll(1, 10, search)
             ),
+            tap(res => {
+                console.log('API Response:', res);
+                console.log('Data:', res.data);
+            }),
             map(res => res.data ?? [])
         ),
         { initialValue: [] }
     );
 
+    loadPlan() {
+      this.planService.getAll(1, 100, '').subscribe({
+          next: (res: any) => {
+              console.log('Plans:', res);
+              this.plans.set(res.data || []);
+          }
+      });
+  }
+
+  loadTenant() {
+      this.tenantService.getAll(1, 100, '').subscribe({
+          next: (res: any) => {
+              console.log('Tenants:', res);
+              this.tenants.set(res.data || []);
+          }
+      });
+  }
+    
+
+
+
+
     handleForm = this.fb.nonNullable.group({
-        name: ['', Validators.required],
-        subdomain: ['', Validators.required],
-        adminName: ['', Validators.required],
-        adminEmail: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required],
-        roleName: ['', Validators.required],
-   
+        tenantId: ['', Validators.required],
+        planId: ['', Validators.required],
     });
+
 
 
     openNew() {
@@ -189,8 +239,6 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         this.selectedId = null;
         this.submitted = false;
         this.handleForm.reset();
-        this.handleForm.controls.password.setValidators([Validators.required]);
-        this.handleForm.controls.password.updateValueAndValidity();
         this.handleDialog = true;
     }
 
@@ -201,18 +249,15 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         this.handleForm.reset();
     }
 
-    handleEdit(tenant: ITenant) {
+    handleEdit(subcription: ISubcription) {
+        //console.log(subcription);
         this.isEditMode = true;
-        this.selectedId = tenant.id;
+        this.selectedId = subcription.id;
         this.handleForm.patchValue({
-            name: tenant.name,
-            subdomain: tenant.subdomain,
-
+            tenantId: subcription.tenantId,
+            planId: subcription.planId,
+            
         });
-
-        this.handleForm.controls.password.clearValidators();
-        this.handleForm.controls.password.updateValueAndValidity();
-
         this.handleDialog = true;
     }
 
@@ -223,8 +268,8 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         const payload = this.handleForm.getRawValue();
 
         const req = this.selectedId
-            ? this.tenantService.update(this.selectedId, payload)
-            : this.tenantService.create(payload);
+            ? this.subcriptionService.update(this.selectedId, payload)
+            : this.subcriptionService.create(payload);
 
         req.subscribe({
             next: () => {
@@ -244,21 +289,21 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         if (!this.selectedCheckBox || this.selectedCheckBox.length === 0) return;
 
         this.confirm.confirm({
-            message: `Are you sure you want to delete ${this.selectedCheckBox.length} tenants?`,
+            message: `Are you sure you want to delete ${this.selectedCheckBox.length} plans ?`,
             header: 'Confirm Delete',
             icon: 'pi pi-exclamation-triangle',
 
             accept: () => {
 
-                const deleteRequests = this.selectedCheckBox!.map(tenant =>
-                    this.tenantService.delete(tenant.id)
+                const deleteRequests = this.selectedCheckBox!.map(role =>
+                    this.subcriptionService.delete(role.id)
                 );
 
                 forkJoin(deleteRequests).subscribe({
                     next: () => {
-                        this.alert.success('tenants deleted successfully');
+                        this.alert.success('plans deleted successfully');
                         this.selectedCheckBox = null;
-                        this.refreshtenants();
+                        this.refreshplans();
                         this.refreshTrigger.update(v => v + 1);
                     },
                     error: () => {
@@ -269,27 +314,27 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         });
     }
 
-    handleDelete(tenant: ITenant) {
+    handleDelete(subcription: ISubcription) {
 
         this.alert.confirm(
-            `Do you want to delete "${tenant.name}"?`
+            `Do you want to delete "${subcription.tenantId}"?`
         ).then(result => {
 
             if (!result.isConfirmed) {
                 return;
             }
 
-            this.tenantService.delete(tenant.id).subscribe({
+            this.subcriptionService.delete(subcription.id).subscribe({
                 next: () => {
                     this.alert.success(
-                        `"${tenant.name}" deleted successfully`
+                        `"${subcription.tenantId}" deleted successfully`
                     );
 
                     this.refreshTrigger.update(v => v + 1);
                 },
                 error: () => {
                     this.alert.error(
-                        `Failed to delete "${tenant.name}"`
+                        `Failed to delete "${subcription.tenantId}"`
                     );
                 }
             });
@@ -297,33 +342,33 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         });
     }
 
-    toggleStatus(tenant: ITenant) {
+    toggleStatus(subcription: ISubcription) {
 
-        const action = tenant.isActive
+        const action = subcription.TenantSubscriptions  
             ? 'Deactivate'
             : 'Activate';
 
         this.alert.confirm(
-            `Do you want to ${action.toLowerCase()} "${tenant.name}"?`
+            `Do you want to ${action.toLowerCase()} "${subcription.tenantId}"?`
         ).then(result => {
 
             if (!result.isConfirmed) {
                 return;
             }
 
-            this.tenantService.changeStatus(tenant.id)
+            this.subcriptionService.changeStatus(subcription.id)
                 .subscribe({
                     next: () => {
 
                         this.alert.success(
-                            `"${tenant.name}" ${action}d successfully`
+                            `"${subcription.tenantId}" ${action}d successfully`
                         );
 
                         this.refreshTrigger.update(v => v + 1);
                     },
                     error: () => {
                         this.alert.error(
-                            `Failed to ${action.toLowerCase()} "${tenant.name}"`
+                            `Failed to ${action.toLowerCase()} "${subcription.tenantId}"`
                         );
                     }
                 });
@@ -331,5 +376,6 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         });
     }
 
-
+ 
 }
+

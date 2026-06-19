@@ -6,5 +6,4 @@ export interface IRole {
 
 export interface IRoleRequest {
     name: string;
-
 }

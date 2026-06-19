@@ -101,9 +101,16 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
     columns: TableColumn[] = [
         {
             field: 'name',
-            header: 'Name',
+            header: 'Role Name',
             sortable: true
         },
+
+        {
+            field: 'tenantName',
+            header: 'Tenant Name',
+            sortable: true
+        },
+
 
         {
             field: 'status',
@@ -114,6 +121,13 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
     ];
 
     actions: TableAction[] = [
+        {
+            action: 'toggleStatus',
+            icon: 'pi pi-power-off',
+            severity: 'warn',
+            tooltip: 'Toggle Status'
+
+        },
         {
             action: 'edit',
             icon: 'pi pi-pencil',
@@ -175,6 +189,10 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
             switchMap(({ search }) =>
                 this.RoleService.getAll(1, 10, search)
             ),
+            tap(res => {
+                console.log('API Response:', res);
+                console.log('Data:', res.data);
+            }),
             map(res => res.data ?? [])
         ),
         { initialValue: [] }

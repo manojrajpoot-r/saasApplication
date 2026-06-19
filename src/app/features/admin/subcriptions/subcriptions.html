@@ -1,0 +1,83 @@
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="handleDeleteselected()" [disabled]="!selectedCheckBox || !selectedCheckBox.length" />
+            </ng-template>
+
+
+        </p-toolbar>
+
+
+
+
+        <app-base-table
+            [data]="subcriptions()"
+            [columns]="columns"
+            [actions]="actions"
+            [selection]="selectedCheckBox ?? []"
+            (selectionChange)="selectedCheckBox = $event"
+            (search)="search.set($event)"
+            (actionClick)="handleAction($event)">
+        </app-base-table>
+
+
+        <p-dialog
+            [(visible)]="handleDialog"
+            [style]="{ width: '450px' }"
+            header={{header}}
+            [modal]="true">
+
+                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
+
+                    <!-- BODY -->
+
+                    <div class="flex flex-col gap-6">
+
+
+
+
+
+                            <div class="mb-3">
+                                <label class="block font-bold mb-2"> Plan Name</label>
+                                <select pInputText formControlName="planId" class="w-full">
+                                    <option *ngFor="let plan of plans()" [value]="plan.id">{{ plan.name }}</option>
+                                </select>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label class="block font-bold mb-2"> Tenant Name</label>
+                                <select pInputText formControlName="tenantId" class="w-full">
+                                    <option *ngFor="let tenant of tenants()" [value]="tenant.id">{{ tenant.name }}</option>
+                                </select>
+                            </div>
+                           
+
+
+                    </div>
+
+                    <!-- FOOTER -->
+
+                    <div class="flex justify-end gap-2 mt-5">
+
+                        <p-button
+                            label="Cancel"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            type="button"
+                            (click)="hideDialog()">
+                        </p-button>
+
+                        <p-button
+                            [label]="selectedId ? 'Update' : 'Save'"
+                            icon="pi pi-check"
+                            type="submit">
+                        </p-button>
+
+                    </div>
+
+                </form>
+
+        </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

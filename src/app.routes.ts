@@ -1,38 +1,21 @@
 import { Routes } from '@angular/router';
-import { AppLayout } from './app/layout/component/app.layout';
-import { Documentation } from './app/pages/documentation/documentation';
 import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
 
 export const appRoutes: Routes = [
 
-
-    // {
-    //     path: '',
-    //     component: AppLayout,
-    //     children: [
-
-    //         { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
-    //         { path: 'documentation', component: Documentation },
-    //         { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
-    //     ]
-    // },
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
 
+    // Admin Login
     {
         path: 'admin',
         loadChildren: () =>
             import('./app/features/auth/auth.routes')
                 .then(m => m.AUTH_ROUTES)
     },
-    {
-        path: 'admin',
-        loadChildren: () =>
-            import('./app/features/admin/admin.routes')
-                .then(m => m.ADMIN_ROUTES)
-    },
 
+    // Tenant Login
     {
         path: 'tenant',
         loadChildren: () =>
@@ -40,10 +23,31 @@ export const appRoutes: Routes = [
                 .then(m => m.AUTH_ROUTES)
     },
 
+    // Admin Module
+    {
+        path: 'admin',
+        children: [
+            {
+                path: '',
+                loadChildren: () =>
+                    import('./app/features/routes/admin.routes')
+                        .then(m => m.ADMIN_ROUTES)
+            }
+        ]
+    },
 
-
-
-
+    // Tenant Module
+    {
+        path: 'tenant',
+        children: [
+            {
+                path: '',
+                loadChildren: () =>
+                    import('./app/features/routes/tenant.routes')
+                        .then(m => m.TENANT_ROUTES)
+            }
+        ]
+    },
 
     {
         path: '',
@@ -51,9 +55,8 @@ export const appRoutes: Routes = [
         pathMatch: 'full'
     },
 
-
-
-
-
-    { path: '**', redirectTo: '/notfound' }
+    {
+        path: '**',
+        redirectTo: 'notfound'
+    }
 ];

@@ -22,4 +22,8 @@ export class AssignRolePermissionService {
             `${this.apiUrl}/role-permissions/${roleId}`
         );
     }
+
+    getTenantPermissions() {
+        return this.http.get(`${this.apiUrl}/my-tenant-permissions`)
+    }
 }

@@ -1,8 +1,10 @@
 export interface CurrentUser {
     id: number;
-    fullName?: string;   // ? laga do
+    fullName?: string;
     email: string;
     tenantId?: number;
     roles: string[];
     permissions: string[];
+    isPlatformUser?: boolean;
 }
+
