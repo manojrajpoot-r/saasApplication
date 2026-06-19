@@ -177,7 +177,9 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
         subdomain: ['', Validators.required],
         adminName: ['', Validators.required],
         adminEmail: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required]
+        password: ['', Validators.required],
+        roleName: ['', Validators.required],
+   
     });
 
 
