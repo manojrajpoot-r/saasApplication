@@ -110,6 +110,13 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
 
     actions: TableAction[] = [
         {
+            action: 'toggleStatus',
+            icon: 'pi pi-power-off',
+            severity: 'warn',
+            tooltip: 'Toggle Status'
+
+        },
+        {
             action: 'edit',
             icon: 'pi pi-pencil',
             severity: 'info',
@@ -122,13 +129,7 @@ export class TenantsComponent extends BaseCrudComponent<ITenant> {
             tooltip: 'Delete'
         },
 
-        {
-            action: 'toggleStatus',
-            icon: 'pi pi-power-off',
-            severity: 'warn',
-            tooltip: 'Toggle Status'
 
-        }
 
     ];
 

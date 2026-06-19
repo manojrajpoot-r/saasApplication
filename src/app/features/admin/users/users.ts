@@ -89,17 +89,34 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             header: 'Full Name',
             sortable: true
         },
+        {
+            field: 'tenantName',
+            header: 'Tenant Name',
+            sortable: true
+        },
 
         {
             field: 'email',
             header: 'Email',
             sortable: true,
 
+        },
+        {
+            field: 'status',
+            header: 'Status',
+            sortable: true,
+            type: 'tag'
         }
     ];
 
     actions: TableAction[] = [
+        {
+            action: 'toggleStatus',
+            icon: 'pi pi-power-off',
+            severity: 'warn',
+            tooltip: 'Toggle Status'
 
+        },
         {
             action: 'edit',
             icon: 'pi pi-pencil',
@@ -122,9 +139,7 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     }
 
     handleAction(event: { action: string; row: IUser; }) {
-
         const user = event.row;
-
         switch (event.action) {
 
             case 'edit':
@@ -134,7 +149,9 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             case 'delete':
                 this.handleDelete(user);
                 break;
-
+            case 'toggleStatus':
+                this.toggleStatus(user);
+                break;
 
         }
     }
@@ -239,9 +256,7 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     }
 
     handleDeleteselected(): void {
-
         if (!this.selectedCheckBox || this.selectedCheckBox.length === 0) return;
-
         this.confirm.confirm({
             message: `Are you sure you want to delete ${this.selectedCheckBox.length} users?`,
             header: 'Confirm Delete',
@@ -269,7 +284,6 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     }
 
     handleDelete(user: IUser) {
-
         this.alert.confirm(
             `Do you want to delete "${user.fullName}"?`
         ).then(result => {
@@ -277,7 +291,6 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             if (!result.isConfirmed) {
                 return;
             }
-
             this.userService.delete(user.id).subscribe({
                 next: () => {
                     this.alert.success(
@@ -296,6 +309,36 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
         });
     }
 
+    toggleStatus(user: IUser) {
+        const action = user.status
+            ? 'Deactivate'
+            : 'Activate';
+
+        this.alert.confirm(
+            `Do you want to ${action.toLowerCase()} "${user.fullName}"?`
+        ).then(result => {
+
+            if (!result.isConfirmed) {
+                return;
+            }
+            this.userService.changeStatus(user.id)
+                .subscribe({
+                    next: () => {
+                        this.alert.success(
+                            `"${user.fullName}" ${action}d successfully`
+                        );
+
+                        this.refreshTrigger.update(v => v + 1);
+                    },
+                    error: () => {
+                        this.alert.error(
+                            `Failed to ${action.toLowerCase()} "${user.fullName}"`
+                        );
+                    }
+                });
+
+        });
+    }
 
 
 

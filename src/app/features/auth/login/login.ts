@@ -59,16 +59,20 @@ export class LoginComponent {
 
             next: (res: LoginResponse) => {
                 console.log(res);
-
-                this.authService.saveCurrentUser(
-                    res.data.user
-                );
-
                 this.alertService.success('Login successful!');
 
-                setTimeout(() => {
-                    this.router.navigate(['/admin/dashboard']);
-                }, 2000);
+                if (this.authService.isPlatformUser()) {
+                    setTimeout(() => {
+                        this.router.navigate(['/admin/dashboard']);
+                    }, 1000);;
+                } else {
+                    setTimeout(() => {
+                        this.router.navigate(['/tenant/dashboard']);
+                    }, 1000);
+
+                }
+
+
             },
 
             error: (err) => {

@@ -14,6 +14,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { AlertService } from '@/app/core/services/alert/alert';
 import { Router } from '@angular/router';
 import { AssignRolePermissionService } from '@/app/core/services/admin/assign-role-permission/assign-role-permission';
+import { AuthService } from '@/app/core/services/auth/auth.service';
 @Component({
     selector: 'app-role-permission',
     standalone: true,
@@ -36,7 +37,8 @@ export class RolePermissionComponent implements OnInit {
     roleId: number = 0;
     permissions: any[] = [];
     loading = false;
-
+    tenantPermissions: any[] = [];
+    isPlatformUser = false;
     constructor(
         private route: ActivatedRoute,
         private permissionService: PermissionService,
@@ -44,62 +46,54 @@ export class RolePermissionComponent implements OnInit {
         private roleService: RoleService,
         private cdr: ChangeDetectorRef,
         private alert: AlertService,
-        private router: Router
+        private router: Router,
+        private authService: AuthService
     ) { }
 
     ngOnInit(): void {
-
+        this.isPlatformUser = this.authService.isPlatformUser();
         this.route.paramMap.subscribe(params => {
             this.roleId = Number(params.get('id'));
             this.loadRole();
-            this.loadData();
+            if (this.isPlatformUser) {
+                this.loadData();
+            } else {
 
+                this.loadTenantPermissions();
+            }
         });
-
     }
 
+
     loadData(): void {
-
         this.loading = true;
-
         this.permissionService
             .getAll(1, 1000, '')
             .subscribe({
                 next: (res) => {
-
-                    console.log('Permissions', res);
-
+                    console.log('Permissionsaa', res);
                     const grouped: Record<string, any[]> = {};
-
                     res.data.forEach(item => {
-
                         if (!grouped[item.groupName]) {
                             grouped[item.groupName] = [];
                         }
-
                         grouped[item.groupName].push({
                             id: item.id,
                             name: item.name,
                             checked: false
                         });
-
                     });
-
                     this.permissions = Object.keys(grouped)
                         .map(groupName => ({
                             groupName,
                             items: grouped[groupName]
                         }));
-
                     console.log(this.permissions);
-
                     this.loadAssignedPermissions();
                 },
 
                 error: err => {
-
                     console.error(err);
-
                     this.loading = false;
                 }
             });
@@ -109,16 +103,47 @@ export class RolePermissionComponent implements OnInit {
         this.roleService.getById(this.roleId)
             .subscribe({
                 next: (res: any) => {
-                    this.roleName = res.name;
-                    // ya agar API wrapper bhej rahi hai:
+
                     this.roleName = res.data?.name;
                 },
                 error: (err) => {
                     console.log(err);
                 }
             });
-
     }
+
+    loadTenantPermissions(): void {
+        this.loading = true;
+        this.assignRolePermissionService
+            .getTenantPermissions()
+            .subscribe({
+                next: (res: any) => {
+                    const grouped: Record<string, any[]> = {};
+                    res.data.forEach((item: any) => {
+
+                        if (!grouped[item.groupName]) {
+                            grouped[item.groupName] = [];
+                        }
+                        grouped[item.groupName].push({
+                            id: item.id,
+                            name: item.name,
+                            checked: false
+                        });
+                    });
+                    this.permissions = Object.keys(grouped)
+                        .map(groupName => ({
+                            groupName,
+                            items: grouped[groupName]
+                        }));
+                    this.loadAssignedPermissions();
+                },
+                error: err => {
+                    console.log(err);
+                    this.loading = false;
+                }
+            });
+    }
+
 
     loadAssignedPermissions() {
         this.assignRolePermissionService
@@ -130,7 +155,6 @@ export class RolePermissionComponent implements OnInit {
                             .map((x: any) => x?.name ?? '')
                             .filter(Boolean)
                             .map((x: string) => x.trim().toLowerCase());
-
                     this.permissions.forEach(group => {
                         group.items.forEach((item: any) => {
                             item.checked =
@@ -139,8 +163,6 @@ export class RolePermissionComponent implements OnInit {
                                 );
                         });
                     });
-
-
                     this.loading = false;
                     this.cdr.detectChanges();
                 },
@@ -163,7 +185,6 @@ export class RolePermissionComponent implements OnInit {
         const payload = {
             roleId: this.roleId,
             permissionIds: selectedPermissions
-
         };
         this.assignRolePermissionService.assignPermission(payload)
             .subscribe({
