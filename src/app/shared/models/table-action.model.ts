@@ -2,7 +2,9 @@ export type ActionType =
     | 'edit'
     | 'delete'
     | 'toggleStatus'
-    | 'assignPermission';
+    | 'assignPermission'
+    | 'renewSubscription'
+    | 'subscribe';
 
 export type SeverityType =
     | 'secondary'

@@ -9,6 +9,13 @@ export const TENANT_ROUTES: Routes = [
         canActivate: [authGuard],
         children: [
             {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },
+
+
+            {
                 path: 'dashboard',
                 loadComponent: () =>
                     import('../admin/dashboard/dashboard')
@@ -33,10 +40,15 @@ export const TENANT_ROUTES: Routes = [
                         .then(m => m.UsersComponent)
             },
             {
-                path: '',
-                redirectTo: 'dashboard',
-                pathMatch: 'full'
-            }
+                path: 'plans',
+                loadComponent: () =>
+                    import('../tenant/plan-list/plan-list')
+                        .then(m => m.PlanListComponent)
+            },
+
+
+
+
         ]
     }
 ];

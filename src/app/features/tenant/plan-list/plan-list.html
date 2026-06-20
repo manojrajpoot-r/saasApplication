@@ -1,0 +1,78 @@
+<div class="card">
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold mb-2">
+            Choose Your Plan
+        </h1>
+
+        <p class="text-600">
+            Select the best plan for your business
+        </p>
+    </div>
+
+    <div class="flex flex-wrap justify-content-center gap-4">
+
+        @for(plan of plans(); track plan.id) {
+
+        <div style="width:350px" class="col-12 md:col-6 xl:col-4">
+
+            <div class="pricing-card">
+
+                @if(plan.name?.toLowerCase() === 'premium') {
+                <div class="popular-badge">
+                    Most Popular
+                </div>
+                }
+
+                <div class="text-center">
+
+                    <h2 class="plan-title">
+                        {{ plan.name }}
+                    </h2>
+
+                    <div class="plan-price">
+                        ₹{{ plan.price }}
+                    </div>
+
+                    <div class="plan-duration">
+                        {{ plan.durationInMonths }} Month(s)
+                    </div>
+
+                </div>
+
+                <ul class="feature-list">
+
+                    <li>
+                        <i class="pi pi-check"></i>
+                        Unlimited Access
+                    </li>
+
+                    <li>
+                        <i class="pi pi-check"></i>
+                        Email Support
+                    </li>
+
+                    <li>
+                        <i class="pi pi-check"></i>
+                        Dashboard Access
+                    </li>
+
+                </ul>
+
+                <p-button
+                    label="Subscribe"
+                    icon="pi pi-credit-card"
+                    severity="success"
+                    styleClass="w-full"
+                    (onClick)="subscribePlan(plan.id)">
+                </p-button>
+
+            </div>
+
+        </div>
+
+        }
+
+    </div>
+
+</div>

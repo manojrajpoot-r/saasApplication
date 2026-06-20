@@ -62,16 +62,16 @@ export class AppMenu {
                                     icon: 'pi pi-fw pi-pencil',
                                     routerLink: ['/admin/permissions']
                                 },
-                                {  
+                                {
                                     label: 'Plans',
                                     icon: 'pi pi-fw pi-pencil',
-                                    routerLink: ['/admin/plans']   
-                                 },
-                                {  
+                                    routerLink: ['/admin/plans']
+                                },
+                                {
                                     label: 'Subcriptions',
                                     icon: 'pi pi-fw pi-pencil',
-                                    routerLink: ['/admin/subcriptions']   
-                                 },
+                                    routerLink: ['/admin/subcriptions']
+                                },
                             ]
                         }
                     ]
@@ -80,15 +80,14 @@ export class AppMenu {
         } else {
             this.model = [
                 {
-                    label: 'Pages',
-                    icon: 'pi pi-fw pi-briefcase',
-                    path: '/pages',
+
                     items: [
                         {
                             label: 'Dashboard',
                             icon: 'pi pi-fw pi-globe',
                             routerLink: ['/tenant/dashboard']
                         },
+
                         {
                             label: 'Auth',
                             icon: 'pi pi-fw pi-user',
@@ -103,9 +102,42 @@ export class AppMenu {
                                     label: 'Users',
                                     icon: 'pi pi-fw pi-user',
                                     routerLink: ['/tenant/users']
+                                },
+
+                            ],
+
+                        },
+
+                        {
+                            label: 'Subscription Management',
+                            icon: 'pi pi-fw pi-user',
+                            path: '/Subscription Management',
+                            items: [
+
+                                {
+                                    label: 'Plans',
+                                    icon: 'pi pi-box',
+                                    routerLink: '/tenant/plans'
+                                },
+                                {
+                                    label: 'My Subscription',
+                                    icon: 'pi pi-file',
+                                    routerLink: '/tenant/subscription'
+                                },
+                                {
+                                    label: 'Payment History',
+                                    icon: 'pi pi-credit-card',
+                                    routerLink: '/tenant/payments'
+                                },
+                                {
+                                    label: 'Profile',
+                                    icon: 'pi pi-user',
+                                    routerLink: '/tenant/profile'
                                 }
+
                             ]
-                        }
+                        },
+
                     ]
                 }
             ];

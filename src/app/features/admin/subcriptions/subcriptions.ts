@@ -37,9 +37,9 @@ import { SubcriptionService } from '@/app/core/services/admin/subcriptions/subcr
 import { ISubcription } from '@/app/core/models/subcriptions/subcription.model';
 
 import { PlanService } from '@/app/core/services/admin/plans/plan';
-import{TenantService} from '@/app/core/services/admin/tenants/tenant';
+import { TenantService } from '@/app/core/services/admin/tenants/tenant';
 
-import{ IPlan } from '@/app/core/models/plans/plan.model';
+import { IPlan } from '@/app/core/models/plans/plan.model';
 import { ISubcriptionRequest } from '@/app/core/models/subcriptions/subcription.model';
 import { IPlanRequest } from '@/app/core/models/plans/plan.model';
 import { NgControl } from '@angular/forms';
@@ -70,15 +70,15 @@ import { NgControl } from '@angular/forms';
 
     ],
 
-  selector: 'app-subcriptions',
-  templateUrl: './subcriptions.html',
-  styleUrl: './subcriptions.scss',
+    selector: 'app-subcriptions',
+    templateUrl: './subcriptions.html',
+    styleUrl: './subcriptions.scss',
     providers: [MessageService, ConfirmationService]
 })
 
 
 
-export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
+export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
     private fb = inject(FormBuilder);
     private subcriptionService = inject(SubcriptionService);
     private alert = inject(AlertService);
@@ -96,13 +96,13 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
     refreshTrigger = signal(0);
     isEditMode = false;
     header: string = "Subcription Details";
-   plans = signal<any[]>([]);
+    plans = signal<any[]>([]);
     tenants = signal<any[]>([]);
 
     ngOnInit(): void {
-    this.loadPlan();
-    this.loadTenant();
-}
+        this.loadPlan();
+        this.loadTenant();
+    }
     load(): void {
         // implementation
     }
@@ -113,22 +113,38 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
 
     columns: TableColumn[] = [
         {
-            field: 'tenantId',
-            header: 'Tenant ID',
+            field: 'tenantName',
+            header: 'Tenant Name',
             sortable: true
         },
 
         {
-            field: 'planId',
-            header: 'Plan ID',
+            field: 'planName',
+            header: 'Plan Name',
             sortable: true
         },
 
-
+        {
+            field: 'amount',
+            header: 'Amount',
+            sortable: true
+        },
 
         {
-            field: 'TenantSubscriptions',
-            header: 'Status',
+            field: 'startDate',
+            header: 'Start Date',
+            sortable: true
+        },
+
+        {
+            field: 'endDate',
+            header: 'End Date',
+            sortable: true
+        },
+
+        {
+            field: 'subscriptionStatus',
+            header: 'Subscription Status ',
             sortable: true,
             type: 'tag'
         }
@@ -154,7 +170,15 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
             severity: 'danger',
             tooltip: 'Delete'
         },
-    
+        {
+            action: 'renewSubscription',
+            icon: "pi pi-refresh",
+            severity: 'contrast',
+            tooltip: 'renewSubscription'
+        },
+
+
+
     ];
 
 
@@ -162,8 +186,10 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
         const subcription = event.row;
 
         switch (event.action) {
-           
 
+            case 'toggleStatus':
+                this.toggleStatus(subcription);
+                break;
             case 'edit':
                 this.handleEdit(subcription);
                 break;
@@ -172,8 +198,8 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
                 this.handleDelete(subcription);
                 break;
 
-            case 'toggleStatus':
-                this.toggleStatus(subcription);
+            case 'renewSubscription':
+                this.renewSubscription(subcription.id);
                 break;
         }
     }
@@ -206,23 +232,23 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
     );
 
     loadPlan() {
-      this.planService.getAll(1, 100, '').subscribe({
-          next: (res: any) => {
-              console.log('Plans:', res);
-              this.plans.set(res.data || []);
-          }
-      });
-  }
+        this.planService.getAll(1, 100, '').subscribe({
+            next: (res: any) => {
+                console.log('Plans:', res);
+                this.plans.set(res.data || []);
+            }
+        });
+    }
 
-  loadTenant() {
-      this.tenantService.getAll(1, 100, '').subscribe({
-          next: (res: any) => {
-              console.log('Tenants:', res);
-              this.tenants.set(res.data || []);
-          }
-      });
-  }
-    
+    loadTenant() {
+        this.tenantService.getAll(1, 100, '').subscribe({
+            next: (res: any) => {
+                console.log('Tenants:', res);
+                this.tenants.set(res.data || []);
+            }
+        });
+    }
+
 
 
 
@@ -256,7 +282,7 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
         this.handleForm.patchValue({
             tenantId: subcription.tenantId,
             planId: subcription.planId,
-            
+
         });
         this.handleDialog = true;
     }
@@ -344,7 +370,7 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
 
     toggleStatus(subcription: ISubcription) {
 
-        const action = subcription.TenantSubscriptions  
+        const action = subcription.TenantSubscriptions
             ? 'Deactivate'
             : 'Activate';
 
@@ -376,6 +402,16 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription>  {
         });
     }
 
- 
+    renewSubscription(id: number) {
+        if (confirm('Are you sure you want to renew this subscription?')) {
+            this.subcriptionService.renewSubscription(id).subscribe({
+                next: (res) => {
+                    this.alert.success("Renew Subscription");
+
+                    this.subcriptions();
+                }
+            });
+        }
+    }
 }
 
