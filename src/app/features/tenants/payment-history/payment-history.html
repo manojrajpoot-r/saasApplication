@@ -1,0 +1,11 @@
+
+        <app-base-table
+            [data]="payments()"
+            [columns]="columns"
+            [actions]="actions"
+            (search)="search.set($event)">
+        </app-base-table>
+
+
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

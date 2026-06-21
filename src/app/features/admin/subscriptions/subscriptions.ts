@@ -4,10 +4,8 @@ import { TableColumn } from '@/app/shared/models/table-column.model';
 import { TableAction } from '@/app/shared/models/table-action.model';
 import { Component, OnInit, signal, ViewChild, inject, computed, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { RoleService } from '@/app/core/services/admin/roles/role';
 import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
-import { IRole } from '@/app/core/models/roles/role.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +33,16 @@ import { combineLatest, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { ActionType } from '@/app/shared/models/table-action.model';
 import { ActionEvent } from '@/app/shared/models/table-action.model';
+import { SubcriptionService } from '@/app/core/services/admin/subcriptions/subcription';
+import { ISubcription } from '@/app/core/models/subcriptions/subcription.model';
+
+import { PlanService } from '@/app/core/services/admin/plans/plan';
+import { TenantService } from '@/app/core/services/admin/tenants/tenant';
+
+import { IPlan } from '@/app/core/models/plans/plan.model';
+import { ISubcriptionRequest } from '@/app/core/models/subcriptions/subcription.model';
+import { IPlanRequest } from '@/app/core/models/plans/plan.model';
+import { NgControl } from '@angular/forms';
 @Component({
     standalone: true,
     imports: [
@@ -56,58 +64,87 @@ import { ActionEvent } from '@/app/shared/models/table-action.model';
         FormErrorDirective,
         ValidationSummaryComponent,
         BaseTableComponent,
+
+
+
+
     ],
 
-    selector: 'app-roles',
-    templateUrl: './roles.html',
-    styleUrl: './roles.scss',
+    selector: 'app-subscriptions',
+    templateUrl: './subscriptions.html',
+    styleUrl: './subscriptions.scss',
     providers: [MessageService, ConfirmationService]
 })
 
 
 
-export class RolesComponent extends BaseCrudComponent<IRole> {
+export class SubscriptionsComponent extends BaseCrudComponent<ISubcription> {
     private fb = inject(FormBuilder);
-    private RoleService = inject(RoleService);
+    private subcriptionService = inject(SubcriptionService);
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
     private router = inject(Router);
+    private planService = inject(PlanService);
+    private tenantService = inject(TenantService);
     handleDialog: boolean = false;
-    role!: IRole;
+    subcription!: ISubcription;
     submitted: boolean = false;
-    selectedCheckBox!: IRole[] | null;
+    selectedCheckBox!: ISubcription[] | null;
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
     search = signal('');
     refreshTrigger = signal(0);
     isEditMode = false;
-    header: string = "Role Details"
+    header: string = "Subcription Details";
+    plans = signal<any[]>([]);
+    tenants = signal<any[]>([]);
 
+    ngOnInit(): void {
+        this.loadPlan();
+        this.loadTenant();
+    }
     load(): void {
         // implementation
     }
 
-    refreshroles(): void {
+    refreshplans(): void {
         this.search.set(this.search()); // re-trigger API
     }
 
     columns: TableColumn[] = [
-        {
-            field: 'name',
-            header: 'Role Name',
-            sortable: true
-        },
-
         {
             field: 'tenantName',
             header: 'Tenant Name',
             sortable: true
         },
 
+        {
+            field: 'planName',
+            header: 'Plan Name',
+            sortable: true
+        },
 
         {
-            field: 'status',
-            header: 'Status',
+            field: 'amount',
+            header: 'Amount',
+            sortable: true
+        },
+
+        {
+            field: 'startDate',
+            header: 'Start Date',
+            sortable: true
+        },
+
+        {
+            field: 'endDate',
+            header: 'End Date',
+            sortable: true
+        },
+
+        {
+            field: 'subscriptionStatus',
+            header: 'Subscription Status ',
             sortable: true,
             type: 'tag'
         }
@@ -134,32 +171,35 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
             tooltip: 'Delete'
         },
         {
-            action: 'assignPermission',
-            icon: 'pi pi-shield',
-            severity: 'warn',
-            tooltip: 'Assign Permission'
-        }
+            action: 'renewSubscription',
+            icon: "pi pi-refresh",
+            severity: 'contrast',
+            tooltip: 'renewSubscription'
+        },
+
+
+
     ];
 
 
-    handleAction(event: ActionEvent<IRole>): void {
-        const role = event.row;
+    handleAction(event: ActionEvent<ISubcription>): void {
+        const subcription = event.row;
 
         switch (event.action) {
-            case 'assignPermission':
-                this.assignPermission(role);
-                break;
 
+            case 'toggleStatus':
+                this.toggleStatus(subcription);
+                break;
             case 'edit':
-                this.handleEdit(role);
+                this.handleEdit(subcription);
                 break;
 
             case 'delete':
-                this.handleDelete(role);
+                this.handleDelete(subcription);
                 break;
 
-            case 'toggleStatus':
-                this.toggleStatus(role);
+            case 'renewSubscription':
+                this.renewSubscription(subcription.id);
                 break;
         }
     }
@@ -171,7 +211,7 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         this.search.set((event.target as HTMLInputElement).value);
     }
 
-    roles = toSignal(
+    subscriptions = toSignal(
         toObservable(
             computed(() => ({
                 search: this.search(),
@@ -180,7 +220,7 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         ).pipe(
             debounceTime(300),
             switchMap(({ search }) =>
-                this.RoleService.getAll(1, 10, search)
+                this.subcriptionService.getAll(1, 10, search)
             ),
             tap(res => {
                 console.log('API Response:', res);
@@ -191,9 +231,31 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         { initialValue: [] }
     );
 
-    handleForm = this.fb.nonNullable.group({
-        name: ['', Validators.required],
+    loadPlan() {
+        this.planService.getAll(1, 100, '').subscribe({
+            next: (res: any) => {
+                console.log('Plans:', res);
+                this.plans.set(res.data || []);
+            }
+        });
+    }
 
+    loadTenant() {
+        this.tenantService.getAll(1, 100, '').subscribe({
+            next: (res: any) => {
+                console.log('Tenants:', res);
+                this.tenants.set(res.data || []);
+            }
+        });
+    }
+
+
+
+
+
+    handleForm = this.fb.nonNullable.group({
+        tenantId: ['', Validators.required],
+        planId: ['', Validators.required],
     });
 
 
@@ -203,7 +265,6 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         this.selectedId = null;
         this.submitted = false;
         this.handleForm.reset();
-
         this.handleDialog = true;
     }
 
@@ -214,12 +275,14 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         this.handleForm.reset();
     }
 
-    handleEdit(role: IRole) {
-        //console.log(role);
+    handleEdit(subcription: ISubcription) {
+        //console.log(subcription);
         this.isEditMode = true;
-        this.selectedId = role.id;
+        this.selectedId = subcription.id;
         this.handleForm.patchValue({
-            name: role.name,
+            tenantId: subcription.tenantId,
+            planId: subcription.planId,
+
         });
         this.handleDialog = true;
     }
@@ -231,8 +294,8 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         const payload = this.handleForm.getRawValue();
 
         const req = this.selectedId
-            ? this.RoleService.update(this.selectedId, payload)
-            : this.RoleService.create(payload);
+            ? this.subcriptionService.update(this.selectedId, payload)
+            : this.subcriptionService.create(payload);
 
         req.subscribe({
             next: () => {
@@ -252,21 +315,21 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         if (!this.selectedCheckBox || this.selectedCheckBox.length === 0) return;
 
         this.confirm.confirm({
-            message: `Are you sure you want to delete ${this.selectedCheckBox.length} roles?`,
+            message: `Are you sure you want to delete ${this.selectedCheckBox.length} plans ?`,
             header: 'Confirm Delete',
             icon: 'pi pi-exclamation-triangle',
 
             accept: () => {
 
                 const deleteRequests = this.selectedCheckBox!.map(role =>
-                    this.RoleService.delete(role.id)
+                    this.subcriptionService.delete(role.id)
                 );
 
                 forkJoin(deleteRequests).subscribe({
                     next: () => {
-                        this.alert.success('roles deleted successfully');
+                        this.alert.success('plans deleted successfully');
                         this.selectedCheckBox = null;
-                        this.refreshroles();
+                        this.refreshplans();
                         this.refreshTrigger.update(v => v + 1);
                     },
                     error: () => {
@@ -277,27 +340,27 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         });
     }
 
-    handleDelete(role: IRole) {
+    handleDelete(subcription: ISubcription) {
 
         this.alert.confirm(
-            `Do you want to delete "${role.name}"?`
+            `Do you want to delete "${subcription.tenantId}"?`
         ).then(result => {
 
             if (!result.isConfirmed) {
                 return;
             }
 
-            this.RoleService.delete(role.id).subscribe({
+            this.subcriptionService.delete(subcription.id).subscribe({
                 next: () => {
                     this.alert.success(
-                        `"${role.name}" deleted successfully`
+                        `"${subcription.tenantId}" deleted successfully`
                     );
 
                     this.refreshTrigger.update(v => v + 1);
                 },
                 error: () => {
                     this.alert.error(
-                        `Failed to delete "${role.name}"`
+                        `Failed to delete "${subcription.tenantId}"`
                     );
                 }
             });
@@ -305,33 +368,33 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         });
     }
 
-    toggleStatus(role: IRole) {
+    toggleStatus(subcription: ISubcription) {
 
-        const action = role.status
+        const action = subcription.TenantSubscriptions
             ? 'Deactivate'
             : 'Activate';
 
         this.alert.confirm(
-            `Do you want to ${action.toLowerCase()} "${role.name}"?`
+            `Do you want to ${action.toLowerCase()} "${subcription.tenantId}"?`
         ).then(result => {
 
             if (!result.isConfirmed) {
                 return;
             }
 
-            this.RoleService.changeStatus(role.id)
+            this.subcriptionService.changeStatus(subcription.id)
                 .subscribe({
                     next: () => {
 
                         this.alert.success(
-                            `"${role.name}" ${action}d successfully`
+                            `"${subcription.tenantId}" ${action}d successfully`
                         );
 
                         this.refreshTrigger.update(v => v + 1);
                     },
                     error: () => {
                         this.alert.error(
-                            `Failed to ${action.toLowerCase()} "${role.name}"`
+                            `Failed to ${action.toLowerCase()} "${subcription.tenantId}"`
                         );
                     }
                 });
@@ -339,11 +402,16 @@ export class RolesComponent extends BaseCrudComponent<IRole> {
         });
     }
 
-    assignPermission(role: IRole) {
-        this.router.navigate([
-            'admin/roles',
-            role.id,
-            'permissions'
-        ]);
+    renewSubscription(id: number) {
+        if (confirm('Are you sure you want to renew this subscription?')) {
+            this.subcriptionService.renewSubscription(id).subscribe({
+                next: (res) => {
+                    this.alert.success("Renew Subscription");
+
+                    this.subscriptions();
+                }
+            });
+        }
     }
 }
+

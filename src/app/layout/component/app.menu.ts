@@ -68,9 +68,9 @@ export class AppMenu {
                                     routerLink: ['/admin/plans']
                                 },
                                 {
-                                    label: 'Subcriptions',
+                                    label: 'Subscriptions',
                                     icon: 'pi pi-fw pi-pencil',
-                                    routerLink: ['/admin/subcriptions']
+                                    routerLink: ['/admin/subscriptions']
                                 },
                             ]
                         }
@@ -122,17 +122,17 @@ export class AppMenu {
                                 {
                                     label: 'My Subscription',
                                     icon: 'pi pi-file',
-                                    routerLink: '/tenant/subscription'
+                                    routerLink: '/tenant/my-subscriptions'
                                 },
                                 {
                                     label: 'Payment History',
                                     icon: 'pi pi-credit-card',
-                                    routerLink: '/tenant/payments'
+                                    routerLink: '/tenant/payment-history'
                                 },
                                 {
                                     label: 'Profile',
                                     icon: 'pi pi-user',
-                                    routerLink: '/tenant/profile'
+                                    routerLink: '/tenant/my-profile'
                                 }
 
                             ]

@@ -70,15 +70,17 @@ import { NgControl } from '@angular/forms';
 
     ],
 
-    selector: 'app-subcriptions',
-    templateUrl: './subcriptions.html',
-    styleUrl: './subcriptions.scss',
+
+  selector: 'app-subscription-list',
+  templateUrl: './subscription-list.html',
+  styleUrl: './subscription-list.scss',
+
     providers: [MessageService, ConfirmationService]
 })
 
 
 
-export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
+export class SubscriptionListComponent extends BaseCrudComponent<ISubcription> {
     private fb = inject(FormBuilder);
     private subcriptionService = inject(SubcriptionService);
     private alert = inject(AlertService);
@@ -99,10 +101,6 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
     plans = signal<any[]>([]);
     tenants = signal<any[]>([]);
 
-    ngOnInit(): void {
-        this.loadPlan();
-        this.loadTenant();
-    }
     load(): void {
         // implementation
     }
@@ -151,25 +149,8 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
     ];
 
     actions: TableAction[] = [
-        {
-            action: 'toggleStatus',
-            icon: 'pi pi-power-off',
-            severity: 'warn',
-            tooltip: 'Toggle Status'
-
-        },
-        {
-            action: 'edit',
-            icon: 'pi pi-pencil',
-            severity: 'info',
-            tooltip: 'Edit'
-        },
-        {
-            action: 'delete',
-            icon: 'pi pi-trash',
-            severity: 'danger',
-            tooltip: 'Delete'
-        },
+  
+    
         {
             action: 'renewSubscription',
             icon: "pi pi-refresh",
@@ -187,17 +168,7 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
 
         switch (event.action) {
 
-            case 'toggleStatus':
-                this.toggleStatus(subcription);
-                break;
-            case 'edit':
-                this.handleEdit(subcription);
-                break;
-
-            case 'delete':
-                this.handleDelete(subcription);
-                break;
-
+           
             case 'renewSubscription':
                 this.renewSubscription(subcription.id);
                 break;
@@ -211,7 +182,7 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
         this.search.set((event.target as HTMLInputElement).value);
     }
 
-    subcriptions = toSignal(
+    subscriptions = toSignal(
         toObservable(
             computed(() => ({
                 search: this.search(),
@@ -231,176 +202,8 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
         { initialValue: [] }
     );
 
-    loadPlan() {
-        this.planService.getAll(1, 100, '').subscribe({
-            next: (res: any) => {
-                console.log('Plans:', res);
-                this.plans.set(res.data || []);
-            }
-        });
-    }
-
-    loadTenant() {
-        this.tenantService.getAll(1, 100, '').subscribe({
-            next: (res: any) => {
-                console.log('Tenants:', res);
-                this.tenants.set(res.data || []);
-            }
-        });
-    }
-
-
-
-
-
-    handleForm = this.fb.nonNullable.group({
-        tenantId: ['', Validators.required],
-        planId: ['', Validators.required],
-    });
-
-
-
-    openNew() {
-        this.isEditMode = false;
-        this.selectedId = null;
-        this.submitted = false;
-        this.handleForm.reset();
-        this.handleDialog = true;
-    }
-
-    hideDialog(): void {
-        this.handleDialog = false;
-        this.submitted = false;
-        this.selectedId = null;
-        this.handleForm.reset();
-    }
-
-    handleEdit(subcription: ISubcription) {
-        //console.log(subcription);
-        this.isEditMode = true;
-        this.selectedId = subcription.id;
-        this.handleForm.patchValue({
-            tenantId: subcription.tenantId,
-            planId: subcription.planId,
-
-        });
-        this.handleDialog = true;
-    }
-
-    handleSubmit() {
-        this.submitted = true;
-        if (this.handleForm.invalid) return;
-
-        const payload = this.handleForm.getRawValue();
-
-        const req = this.selectedId
-            ? this.subcriptionService.update(this.selectedId, payload)
-            : this.subcriptionService.create(payload);
-
-        req.subscribe({
-            next: () => {
-                this.alert.success('Saved Successfully');
-                this.handleDialog = false;
-                this.refreshTrigger.update(v => v + 1);
-            },
-            error: (err) => {
-                console.log(err);
-                this.alert.error('Error');
-            }
-        });
-    }
-
-    handleDeleteselected(): void {
-
-        if (!this.selectedCheckBox || this.selectedCheckBox.length === 0) return;
-
-        this.confirm.confirm({
-            message: `Are you sure you want to delete ${this.selectedCheckBox.length} plans ?`,
-            header: 'Confirm Delete',
-            icon: 'pi pi-exclamation-triangle',
-
-            accept: () => {
-
-                const deleteRequests = this.selectedCheckBox!.map(role =>
-                    this.subcriptionService.delete(role.id)
-                );
-
-                forkJoin(deleteRequests).subscribe({
-                    next: () => {
-                        this.alert.success('plans deleted successfully');
-                        this.selectedCheckBox = null;
-                        this.refreshplans();
-                        this.refreshTrigger.update(v => v + 1);
-                    },
-                    error: () => {
-                        this.alert.error('Some deletions failed');
-                    }
-                });
-            }
-        });
-    }
-
-    handleDelete(subcription: ISubcription) {
-
-        this.alert.confirm(
-            `Do you want to delete "${subcription.tenantId}"?`
-        ).then(result => {
-
-            if (!result.isConfirmed) {
-                return;
-            }
-
-            this.subcriptionService.delete(subcription.id).subscribe({
-                next: () => {
-                    this.alert.success(
-                        `"${subcription.tenantId}" deleted successfully`
-                    );
-
-                    this.refreshTrigger.update(v => v + 1);
-                },
-                error: () => {
-                    this.alert.error(
-                        `Failed to delete "${subcription.tenantId}"`
-                    );
-                }
-            });
-
-        });
-    }
-
-    toggleStatus(subcription: ISubcription) {
-
-        const action = subcription.TenantSubscriptions
-            ? 'Deactivate'
-            : 'Activate';
-
-        this.alert.confirm(
-            `Do you want to ${action.toLowerCase()} "${subcription.tenantId}"?`
-        ).then(result => {
-
-            if (!result.isConfirmed) {
-                return;
-            }
-
-            this.subcriptionService.changeStatus(subcription.id)
-                .subscribe({
-                    next: () => {
-
-                        this.alert.success(
-                            `"${subcription.tenantId}" ${action}d successfully`
-                        );
-
-                        this.refreshTrigger.update(v => v + 1);
-                    },
-                    error: () => {
-                        this.alert.error(
-                            `Failed to ${action.toLowerCase()} "${subcription.tenantId}"`
-                        );
-                    }
-                });
-
-        });
-    }
+ 
+  
 
     renewSubscription(id: number) {
         if (confirm('Are you sure you want to renew this subscription?')) {
@@ -408,10 +211,11 @@ export class SubcriptionsComponent extends BaseCrudComponent<ISubcription> {
                 next: (res) => {
                     this.alert.success("Renew Subscription");
 
-                    this.subcriptions();
+                    this.subscriptions();
                 }
             });
         }
     }
 }
+
 

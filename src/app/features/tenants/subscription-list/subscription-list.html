@@ -1,0 +1,17 @@
+
+
+
+
+
+        <app-base-table
+            [data]="subscriptions()"
+            [columns]="columns"
+            [actions]="actions"
+           
+            (search)="search.set($event)"
+            (actionClick)="handleAction($event)">
+        </app-base-table>
+
+
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

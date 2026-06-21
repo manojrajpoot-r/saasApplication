@@ -42,11 +42,30 @@ export const TENANT_ROUTES: Routes = [
             {
                 path: 'plans',
                 loadComponent: () =>
-                    import('../tenant/plan-list/plan-list')
+                    import('../tenants/plan-list/plan-list')
                         .then(m => m.PlanListComponent)
             },
 
+            {
+                path: 'my-subscriptions',
+                loadComponent: () =>
+                    import('../tenants/subscription-list/subscription-list')
+                        .then(m => m.SubscriptionListComponent)
+            },
 
+            {
+                path: 'payment-history',
+                loadComponent: () =>
+                    import('../tenants/payment-history/payment-history')
+                        .then(m => m.PaymentHistoryComponent)
+            },
+            
+            {
+                path: 'my-profile',
+                loadComponent: () =>
+                    import('../tenants/my-profile/my-profile')
+                        .then(m => m.MyProfileComponent)
+            }
 
 
         ]

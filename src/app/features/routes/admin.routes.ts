@@ -52,10 +52,10 @@ export const ADMIN_ROUTES: Routes = [
                         .then(m => m.PlansComponent)
             },
                 {
-                path: 'subcriptions',
+                path: 'subscriptions',
                 loadComponent: () =>
-                    import('../admin/subcriptions/subcriptions')
-                        .then(m => m.SubcriptionsComponent)
+                    import('../admin/subscriptions/subscriptions')
+                        .then(m => m.SubscriptionsComponent)
             },
             {
                 path: '',
