@@ -13,8 +13,7 @@ export class UserService extends BaseApiService<
 
     protected endpoint = environment.apiUrl + '/User';
 
-    changePassword(userId: string, newPassword: string) {
-        const payload = { userId, newPassword };
+   changePassword(payload: { userId: string; newPassword: string }) {
         return this.http.post(`${this.endpoint}/ChangePassword`, payload);
     }
 }

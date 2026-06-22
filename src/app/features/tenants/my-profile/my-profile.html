@@ -48,107 +48,102 @@
 
         </p-card>
     </div>
-        <p-dialog
+      <p-dialog
             [(visible)]="handleDialog"
             [style]="{ width: '450px' }"
-            header={{header}}
-            [modal]="true">
+            [header]="header"
+            [modal]="true"
+            (onHide)="hideDialog()">
 
-                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
+            <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
 
-                    <!-- BODY -->
+                <div class="mb-3">
+                    <label class="block font-bold mb-2">Full Name</label>
+                    <input pInputText formControlName="fullName" class="w-full">
+                </div>
 
-                    <div class="flex flex-col gap-6">       
+                <div class="mb-3">
+                    <label class="block font-bold mb-2">Email</label>
+                    <input pInputText formControlName="email" class="w-full">
+                </div>
 
-        
-                            <div class="mb-3">
-                                <label class="block font-bold mb-2">Full Name</label>
-                                <input pInputText formControlName="fullName" class="w-full">
-                            </div>
+            </form>
 
-                            <div class="mb-3">
-                                <label class="block font-bold mb-2">Email </label>
-                                <input type="email" pInputText formControlName="email" class="w-full">  
+            <ng-template pTemplate="footer">
 
-                            </div>
-                            <ng-template pTemplate="footer">
+                <button
+                    pButton
+                    label="Cancel"
+                    severity="secondary"
+                    (click)="hideDialog()">
+                </button>
 
-                                <button
-                                    pButton
-                                    label="Cancel"
-                                    severity="secondary"
-                                    (click)="passwordDialog=false">
-                                </button>
+                <button
+                    pButton
+                    label="Save"
+                    (click)="handleSubmit()">
+                </button>
 
-                                <button
-                                    pButton
-                                    label="Update Password"
-                                    (click)="submitPassword()">
-                                </button>
-
-                            </ng-template>
-                    </div>
-                </form>
-
+            </ng-template>
 
         </p-dialog>
 
     <p-dialog
-    header="Change Password"
-    [(visible)]="passwordDialog"
-    [modal]="true"
-    [style]="{width:'450px'}">
+        header="Change Password"
+        [(visible)]="passwordDialog"
+        [modal]="true"
+        [style]="{width:'450px'}">
 
-    <form [formGroup]="passwordForm">
+        <form [formGroup]="passwordForm">
 
-        <div class="field mb-3">
-            <label>Current Password</label>
-            <input
-                pInputText
-                type="password"
-                formControlName="currentPassword"
-                class="w-full">
-        </div>
+            <div class="field mb-3">
+                <label>Current Password</label>
+                <input
+                    pInputText
+                    type="password"
+                    formControlName="currentPassword"
+                    class="w-full">
+            </div>
 
-        <div class="field mb-3">
-            <label>New Password</label>
-            <input
-                pInputText
-                type="password"
-                formControlName="newPassword"
-                class="w-full">
-        </div>
+            <div class="field mb-3">
+                <label>New Password</label>
+                <input
+                    pInputText
+                    type="password"
+                    formControlName="newPassword"
+                    class="w-full">
+            </div>
 
-        <div class="field mb-3">
-            <label>Confirm Password</label>
-            <input
-                pInputText
-                type="password"
-                formControlName="confirmPassword"
-                class="w-full">
-        </div>
+            <div class="field mb-3">
+                <label>Confirm Password</label>
+                <input
+                    pInputText
+                    type="password"
+                    formControlName="confirmPassword"
+                    class="w-full">
+            </div>
 
-    </form>
+        </form>
 
-    <ng-template pTemplate="footer">
+        <ng-template pTemplate="footer">
 
-        <button
-            pButton
-            label="Cancel"
-            severity="secondary"
-            (click)="passwordDialog=false">
-        </button>
+            <button
+                pButton
+                label="Cancel"
+                severity="secondary"
+                (click)="passwordDialog=false">
+            </button>
 
-        <button
-            pButton
-            label="Update Password"
-            (click)="submitPassword()">
-        </button>
+            <button
+                pButton
+                label="Update Password"
+                (click)="submitPassword()">
+            </button>
 
-    </ng-template>
+        </ng-template>
 
 
-</p-dialog>  
+    </p-dialog>  
     <!-- User Details -->
     <div class="col-12 lg:col-8">
 

@@ -4,7 +4,6 @@ import { TableColumn } from '@/app/shared/models/table-column.model';
 import { TableAction } from '@/app/shared/models/table-action.model';
 import { Component, OnInit, signal, ViewChild, inject, computed, } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { RoleService } from '@/app/core/services/admin/roles/role';
 import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
 import { IRole } from '@/app/core/models/roles/role.model';
@@ -92,8 +91,9 @@ export class MyProfileComponent  {
     isEditMode = false;
     header: string = "Profile Details";
     users = signal<IUser[]>([]);
-  selectedId: number | null = null; 
-private fb = inject(FormBuilder);
+    selectedId: number | null = null; 
+    private fb = inject(FormBuilder);
+    
     ngOnInit() {
         this.loadUsers();
     }
@@ -101,6 +101,7 @@ private fb = inject(FormBuilder);
     loadUsers() {
         this.userService.getAll(1, 100, '').subscribe({
             next: (res: any) => {
+                console.log('Users loaded:', res.data);
                 this.users.set(res.data || []);
             }
         });
@@ -128,6 +129,7 @@ private fb = inject(FormBuilder);
     }
 
     handleEdit(user: IUser) {
+       
         this.isEditMode = true;
         this.selectedId = user.id;
 
@@ -174,32 +176,47 @@ private fb = inject(FormBuilder);
 
     passwordDialog = false;
 
-passwordForm = this.fb.nonNullable.group({
-    currentPassword: ['', Validators.required],
-    newPassword: ['', Validators.required],
-    confirmPassword: ['', Validators.required]
-});
-
-openPasswordDialog() {
-    this.passwordDialog = true;
-}
-
-submitPassword() {
-    this.submitted = true;
-    if (this.passwordForm.invalid) {
-        return;
-    }
-    const payload = this.passwordForm.getRawValue();
-    this.userService.changePassword(payload).subscribe({
-        next: () => {
-            this.alert.success('Password Changed Successfully');
-            this.passwordDialog = false;
-            this.passwordForm.reset();
-        },
-        error: () => {
-            this.alert.error('Failed to Change Password');
-        }
+    passwordForm = this.fb.nonNullable.group({
+        currentPassword: ['', Validators.required],
+        newPassword: ['', Validators.required],
+        confirmPassword: ['', Validators.required]
     });
-}
-  
+
+    openPasswordDialog() {
+        this.passwordDialog = true;
+    }
+
+
+
+    submitPassword() {
+        this.submitted = true;
+
+        if (this.passwordForm.invalid) {
+            return;
+        }
+
+        const formValue = this.passwordForm.getRawValue();
+
+        if (formValue.newPassword !== formValue.confirmPassword) {
+            this.alert.error('Passwords do not match');
+            return;
+        }
+
+        const payload = {
+              userId: this.users()[0]?.id?.toString() ?? '',
+                newPassword: formValue.newPassword
+        };
+
+        this.userService.changePassword(payload).subscribe({
+            next: () => {
+                this.alert.success('Password Changed Successfully');
+                this.passwordDialog = false;
+                this.passwordForm.reset();
+            },
+            error: () => {
+                this.alert.error('Failed to Change Password');
+            }
+        });
+    }
+    
 }
