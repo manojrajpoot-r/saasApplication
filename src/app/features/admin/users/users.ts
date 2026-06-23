@@ -33,6 +33,7 @@ import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operato
 import { tap } from 'rxjs/operators';
 import { combineLatest, of } from 'rxjs';
 import { DynamicInputArrayComponent } from '@/app/shared/dynamic-input-array/dynamic-input-array';
+import { CurrentUser } from '@/app/core/models/auth/current-user';
 
 @Component({
     standalone: true,
@@ -82,7 +83,7 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     refreshTrigger = signal(0);
     isEditMode = false;
     header: string = "user Details";
-
+    currentUser = signal<CurrentUser | null>(null);
     columns: TableColumn[] = [
         {
             field: 'fullName',
@@ -126,6 +127,12 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             action: 'delete',
             icon: 'pi pi-trash',
             severity: 'danger'
+        },
+        {
+            action: 'passwordChange',
+            icon: 'pi pi-key',
+            severity: 'success',
+            tooltip: 'Change Password'
         }
     ];
 
@@ -151,6 +158,10 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
                 break;
             case 'toggleStatus':
                 this.toggleStatus(user);
+                break;
+
+            case 'passwordChange':
+                this.openPasswordDialog(user);
                 break;
 
         }
@@ -336,5 +347,51 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     }
 
 
+    passwordDialog = false;
+    passwordForm = this.fb.nonNullable.group({
+        newPassword: ['', Validators.required],
+        confirmPassword: ['', Validators.required]
+    });
 
-}
+    openPasswordDialog(user: IUser) {
+        this.selectedId = user.id;
+        this.passwordDialog = true;
+    }
+
+
+    submitPassword() {
+
+        if (this.passwordForm.invalid) {
+            return;
+        }
+
+        if (this.selectedId == null) {
+            this.alert.error('User not selected');
+            return;
+        }
+
+        const formValue = this.passwordForm.getRawValue();
+
+        if (formValue.newPassword !== formValue.confirmPassword) {
+            this.alert.error('Passwords do not match');
+            return;
+        }
+
+        const payload = {
+            userId: this.selectedId,
+            newPassword: formValue.newPassword
+        };
+
+        this.userService.resetPassword(payload).subscribe({
+            next: () => {
+                this.alert.success('Password Reset Successfully');
+                this.passwordDialog = false;
+                this.passwordForm.reset();
+            },
+            error: (err) => {
+                console.log(err);
+                this.alert.error('Failed to Reset Password');
+            }
+        });
+    }
+}   

@@ -65,8 +65,62 @@ export const TENANT_ROUTES: Routes = [
                 loadComponent: () =>
                     import('../tenants/my-profile/my-profile')
                         .then(m => m.MyProfileComponent)
-            }
+            },
 
+
+
+
+             {
+                path: 'categories',
+                loadComponent: () =>
+                    import('../tenants/ecom/categories/categories')
+                        .then(m => m.CategoryComponent)
+            },
+
+            {
+                path: 'sub-categories',
+                loadComponent: () =>
+                    import('../tenants/ecom/sub-categories/sub-categories')
+                        .then(m => m.SubCategoryComponent)
+            },
+            
+            {
+
+             path: 'brands-products',
+                loadComponent: () =>
+                    import('../tenants/ecom/brands/brands')
+                        .then(m => m.BrandComponent)
+            },
+
+            {
+             path: 'products',
+                loadComponent: () =>
+                    import('../tenants/ecom/products/products')
+                        .then(m => m.ProductComponent)
+            },
+           
+
+            {
+             path: 'colors-products',
+                loadComponent: () =>
+                    import('../tenants/ecom/colors/colors')
+                        .then(m => m.ColorComponent)
+            },
+
+
+             {
+             path: 'sizes-products',
+                loadComponent: () =>
+                    import('../tenants/ecom/sizes/sizes')
+                        .then(m => m.SizeComponent)
+            },
+
+            {
+             path: 'products-varient',
+                loadComponent: () =>
+                    import('../tenants/ecom/product-varient/product-varient')
+                        .then(m => m.ProductVarientComponent)
+            },
 
         ]
     }

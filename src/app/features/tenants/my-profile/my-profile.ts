@@ -102,14 +102,10 @@ export class MyProfileComponent {
     }
 
 
-
     handleForm = this.fb.nonNullable.group({
         fullName: ['', Validators.required],
         email: ['', Validators.required],
     });
-
-
-
 
     hideDialog(): void {
         this.handleDialog = false;
@@ -174,32 +170,41 @@ export class MyProfileComponent {
     openPasswordDialog() {
         this.passwordDialog = true;
     }
-    submitPassword() {
-        this.submitted = true;
 
-        if (this.passwordForm.invalid) {
-            return;
-        }
-        const formValue = this.passwordForm.getRawValue();
-        if (formValue.newPassword !== formValue.confirmPassword) {
-            this.alert.error('Passwords do not match');
-            return;
-        }
 
-        const payload = {
-            userId: this.users()[0]?.id?.toString() ?? '',
-            newPassword: formValue.newPassword
-        };
-        this.userService.changePassword(payload).subscribe({
-            next: () => {
-                this.alert.success('Password Changed Successfully');
-                this.passwordDialog = false;
-                this.passwordForm.reset();
-            },
-            error: () => {
-                this.alert.error('Failed to Change Password');
-            }
-        });
+submitPassword() {
+    this.submitted = true;
+
+    if (this.passwordForm.invalid) {
+        return;
     }
+
+    const formValue = this.passwordForm.getRawValue();
+
+    if (formValue.newPassword !== formValue.confirmPassword) {
+        this.alert.error('Passwords do not match');
+        return;
+    }
+
+    const payload = {
+        userId: this.currentUser()?.id?.toString() ?? '',
+        currentPassword: formValue.currentPassword,
+        newPassword: formValue.newPassword
+    };
+
+    console.log(payload);
+
+    this.userService.changePassword(payload).subscribe({
+        next: () => {
+            this.alert.success('Password Changed Successfully');
+            this.passwordDialog = false;
+            this.passwordForm.reset();
+        },
+        error: (err) => {
+            console.log(err);
+            this.alert.error('Failed to Change Password');
+        }
+    });
+}
 
 }

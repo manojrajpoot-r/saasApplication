@@ -79,4 +79,52 @@
 
         </p-dialog>
 
+
+        <p-dialog
+            header="Reset Password"
+            [(visible)]="passwordDialog"
+            [modal]="true"
+            [style]="{width:'450px'}">
+
+            <form [formGroup]="passwordForm">
+
+                <div class="field mb-3">
+                    <label>New Password</label>
+                    <input
+                        pInputText
+                        type="password"
+                        formControlName="newPassword"
+                        class="w-full">
+                </div>
+
+                <div class="field mb-3">
+                    <label>Confirm Password</label>
+                    <input
+                        pInputText
+                        type="password"
+                        formControlName="confirmPassword"
+                        class="w-full">
+                </div>
+
+            </form>
+
+            <ng-template pTemplate="footer">
+
+                <button
+                    pButton
+                    label="Cancel"
+                    severity="secondary"
+                    (click)="passwordDialog = false">
+                </button>
+
+                <button
+                    pButton
+                    label="Reset Password"
+                    (click)="submitPassword()">
+                </button>
+
+            </ng-template>
+
+</p-dialog>
+
         <p-confirmdialog [style]="{ width: '450px' }" />

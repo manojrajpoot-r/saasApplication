@@ -4,7 +4,8 @@ export type ActionType =
     | 'toggleStatus'
     | 'assignPermission'
     | 'renewSubscription'
-    | 'subscribe';
+    | 'subscribe'
+    |'passwordChange';
 
 export type SeverityType =
     | 'secondary'
@@ -14,6 +15,7 @@ export type SeverityType =
     | 'help'
     | 'danger'
     | 'contrast';
+
 
 export interface TableAction {
     action: ActionType;

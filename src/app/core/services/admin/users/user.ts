@@ -16,4 +16,8 @@ export class UserService extends BaseApiService<
     changePassword(payload: { userId: string; newPassword: string }) {
         return this.http.post(`${this.endpoint}/ChangePassword`, payload);
     }
+
+   resetPassword(payload: { userId: number; newPassword: string }) {
+    return this.http.post(`${this.endpoint}/reset-password`, payload);
+   }
 }

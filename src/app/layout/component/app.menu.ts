@@ -138,6 +138,72 @@ export class AppMenu {
                             ]
                         },
 
+
+
+                           {
+                            label: 'Product Management',
+                            icon: 'pi pi-fw pi-user',
+                            path: '/Product Management',
+                            items: [
+
+                                {
+                                    label: 'Categories',
+                                    icon: 'pi pi-box',
+                                    routerLink: '/tenant/categories'
+                                },
+                                {
+                                    label: 'Sub-Categories',
+                                    icon: 'pi pi-file',
+                                    routerLink: '/tenant/sub-categories'
+                                },
+                                {
+                                    label: 'Brand Product',
+                                    icon: 'pi pi-credit-card',
+                                    routerLink: '/tenant/brands-products'
+                                },
+                                {
+                                    label: 'Products',
+                                    icon: 'pi pi-user',
+                                    routerLink: '/tenant/products'
+                                },
+                                {
+                                    label: 'Size Product',
+                                    icon: 'pi pi-user',
+                                    routerLink: '/tenant/sizes-products'
+                                },
+                                {
+                                    label: 'Colors Product',
+                                    icon: 'pi pi-user',
+                                    routerLink: '/tenant/colors-products'
+                                },
+                                
+                                {
+                                    label: 'Product Variant',
+                                    icon: 'pi pi-user',
+                                    routerLink: '/tenant/products-varient'
+                                },
+
+                            ]
+                        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     ]
                 }
             ];
