@@ -214,15 +214,12 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
     handleEdit(user: IUser) {
         this.isEditMode = true;
         this.selectedId = user.id;
-
         this.handleForm.patchValue({
             fullName: user.fullName
         });
-
         this.handleForm.patchValue({
             email: user.email
         });
-
         this.handleDialog = true;
     }
 
@@ -263,11 +260,9 @@ export class UsersComponent extends BaseCrudComponent<IUser> {
             icon: 'pi pi-exclamation-triangle',
 
             accept: () => {
-
                 const deleteRequests = this.selectedCheckBox!.map(user =>
                     this.userService.delete(user.id)
                 );
-
                 forkJoin(deleteRequests).subscribe({
                     next: () => {
                         this.alert.success('users deleted successfully');

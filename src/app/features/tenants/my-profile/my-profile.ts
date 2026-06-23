@@ -40,6 +40,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { IUser } from '@/app/core/models/users/user.model';
+import { AuthService } from '@/app/core/services/auth/auth.service';
+import { CurrentUser } from '@/app/core/models/auth/current-user';
 @Component({
     standalone: true,
     imports: [
@@ -66,9 +68,9 @@ import { IUser } from '@/app/core/models/users/user.model';
 
 
 
-  selector: 'app-my-profile',
-  templateUrl: './my-profile.html',
-  styleUrl: './my-profile.scss',
+    selector: 'app-my-profile',
+    templateUrl: './my-profile.html',
+    styleUrl: './my-profile.scss',
 
 
     providers: [MessageService, ConfirmationService]
@@ -76,13 +78,13 @@ import { IUser } from '@/app/core/models/users/user.model';
 
 
 
-export class MyProfileComponent  {
-  
-    
+export class MyProfileComponent {
+
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
     private router = inject(Router);
     private userService = inject(UserService);
+    private authService = inject(AuthService);
     handleDialog: boolean = false;
     submitted: boolean = false;
     private destroy$ = new Subject<void>();
@@ -91,31 +93,19 @@ export class MyProfileComponent  {
     isEditMode = false;
     header: string = "Profile Details";
     users = signal<IUser[]>([]);
-    selectedId: number | null = null; 
+    selectedId: number | null = null;
     private fb = inject(FormBuilder);
-    
+    currentUser = signal<CurrentUser | null>(null);
+
     ngOnInit() {
-        this.loadUsers();
+        this.currentUser.set(this.authService.getCurrentUser());
     }
-
-    loadUsers() {
-        this.userService.getAll(1, 100, '').subscribe({
-            next: (res: any) => {
-                console.log('Users loaded:', res.data);
-                this.users.set(res.data || []);
-            }
-        });
-    }
-
 
 
 
     handleForm = this.fb.nonNullable.group({
         fullName: ['', Validators.required],
         email: ['', Validators.required],
-        password: ['', Validators.required],
-
-
     });
 
 
@@ -128,37 +118,37 @@ export class MyProfileComponent  {
         this.handleForm.reset();
     }
 
-    handleEdit(user: IUser) {
-       
-        this.isEditMode = true;
+    handleEdit() {
+        const user = this.currentUser();
+        if (!user) return;
         this.selectedId = user.id;
-
         this.handleForm.patchValue({
-            fullName: user.fullName
-        });
-
-        this.handleForm.patchValue({
-            email: user.email
+            fullName: user.fullName ?? '',
+            email: user.email ?? ''
         });
 
         this.handleDialog = true;
     }
 
+
+
     handleSubmit() {
         this.submitted = true;
-        if (this.handleForm.invalid) return;
+
+        if (this.handleForm.invalid || !this.selectedId) {
+            return;
+        }
 
         const formValue = this.handleForm.getRawValue();
 
         const payload = {
             fullName: formValue.fullName,
-            email: formValue.email,
-            password: formValue.password
+            email: formValue.email
         };
-
-        const req = this.selectedId
-            ? this.userService.update(this.selectedId, payload)
-            : this.userService.create(payload);
+        const req = this.userService.update(
+            this.selectedId,
+            payload
+        );
 
         req.subscribe({
             next: () => {
@@ -175,7 +165,6 @@ export class MyProfileComponent  {
 
 
     passwordDialog = false;
-
     passwordForm = this.fb.nonNullable.group({
         currentPassword: ['', Validators.required],
         newPassword: ['', Validators.required],
@@ -185,28 +174,22 @@ export class MyProfileComponent  {
     openPasswordDialog() {
         this.passwordDialog = true;
     }
-
-
-
     submitPassword() {
         this.submitted = true;
 
         if (this.passwordForm.invalid) {
             return;
         }
-
         const formValue = this.passwordForm.getRawValue();
-
         if (formValue.newPassword !== formValue.confirmPassword) {
             this.alert.error('Passwords do not match');
             return;
         }
 
         const payload = {
-              userId: this.users()[0]?.id?.toString() ?? '',
-                newPassword: formValue.newPassword
+            userId: this.users()[0]?.id?.toString() ?? '',
+            newPassword: formValue.newPassword
         };
-
         this.userService.changePassword(payload).subscribe({
             next: () => {
                 this.alert.success('Password Changed Successfully');
@@ -218,5 +201,5 @@ export class MyProfileComponent  {
             }
         });
     }
-    
+
 }

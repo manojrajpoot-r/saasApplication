@@ -10,5 +10,8 @@ export interface IUserRequest {
     fullName: string;
     email: string;
     password: string;
-
+}
+export interface IUpdateUserRequest {
+    fullName: string;
+    email: string;
 }
