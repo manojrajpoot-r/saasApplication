@@ -116,32 +116,38 @@
 
             <td
                 *ngFor="let col of columns">
+                    <ng-container [ngSwitch]="col.type">
 
-                <ng-container
-                    [ngSwitch]="col.type">
+                        <!-- Image -->
 
-                    <!-- Status Tag -->
+                        <img
+                            *ngSwitchCase="'image'"
+                            [src]="getImageUrl(row[col.field])"
+                            width="60"
+                            height="60"
+                            style="
+                                object-fit: cover;
+                                border-radius: 8px;
+                                cursor: pointer;
+                            "
+                            (error)="($event.target as HTMLImageElement).src='assets/no-image.png'"
+                        />
 
-                    <p-tag
-                        *ngSwitchCase="'tag'"
-                        [value]="row[col.field]
-                            ? 'Active'
-                            : 'Inactive'"
-                        [severity]="row[col.field]
-                            ? 'success'
-                            : 'danger'">
+                        <!-- Status -->
 
-                    </p-tag>
+                        <p-tag
+                            *ngSwitchCase="'tag'"
+                            [value]="row[col.field] ? 'Active' : 'Inactive'"
+                            [severity]="row[col.field] ? 'success' : 'danger'">
+                        </p-tag>
 
-                    <!-- Normal Text -->
+                        <!-- Text -->
 
-                    <span *ngSwitchDefault>
+                        <span *ngSwitchDefault>
+                            {{ row[col.field] }}
+                        </span>
 
-                        {{ row[col.field] }}
-
-                    </span>
-
-                </ng-container>
+                    </ng-container>
 
             </td>
 

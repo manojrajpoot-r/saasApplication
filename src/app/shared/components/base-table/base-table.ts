@@ -74,6 +74,22 @@ export class BaseTableComponent<T> {
     @Output()
     actionClick = new EventEmitter<ActionEvent<T>>();
 
+    readonly BASE_URL = 'http://localhost:8080';
+
+    getImageUrl(path: string): string {
+        if (!path) {
+            return 'assets/no-image.png';
+        }
+
+        return `${this.BASE_URL}/${path}`;
+    }
+
+    onImageError(event: Event): void {
+        const img = event.target as HTMLImageElement;
+        img.src = 'assets/no-image.png';
+    }
+
+
     onAction(action: ActionType, row: T): void {
         this.actionClick.emit({
             action,
