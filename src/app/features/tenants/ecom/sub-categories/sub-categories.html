@@ -16,37 +16,45 @@
             [actions]="actions"
             [selection]="selectedCheckBox ?? []"
             (selectionChange)="selectedCheckBox = $event"
-            (search)="search.set($event)"
-            (actionClick)="handleAction($event)">
+             (search)="onSearch($event)"
+            (actionClick)="handleAction($event)"
+            [totalRecords]="totalRecords()"
+            (pageChange)="onPageChange($event)">
+
         </app-base-table>
 
 
-        <p-dialog
-            [(visible)]="handleDialog"
-            [style]="{ width: '450px' }"
-            header={{header}}
-            [modal]="true">
+            <p-dialog
+                [(visible)]="handleDialog"
+                [style]="{ width: '450px' }"
+                header={{header}}
+                [modal]="true">
 
                 <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
 
                     <!-- BODY -->
 
                     <div class="flex flex-col gap-6">
-                        <div>
-                            <label class="block font-bold mb-3">
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
                                 Category
                             </label>
 
-                          <p-select
+                            <p-select
                                 [options]="categories()"
                                 optionLabel="name"
                                 optionValue="id"
-                                formControlName="categoryId">
-                                </p-select>
+                                formControlName="categoryId"
+                                placeholder="Select Category"
+                                class="w-full">
+                            </p-select>
                         </div>
+
+
+
                                 <div>
                                     <label class="block font-bold mb-3">
-                                    Category Name
+                                    Sub Category Name
                                     </label>
                                         <input pInputText
                                         formControlName="name"
@@ -66,20 +74,52 @@
                                         fieldName="Description" />
                                 </div>
 
-                             <div>
-                                <label class="block font-bold mb-3">
-                                    Image
-                                </label>
+                        <div>
+                            <label class="block font-bold mb-3">
+                                Image
+                            </label>
 
-                                <input
-                                  *ngIf="imagePreview"
-                                    [src]="imagePreview"
-                                    width="100"
-                                    height="100"
-                                    type="file"
-                                    class="w-full"
-                                    (change)="onFileSelected($event)">
-                            </div>
+                            <!-- Preview -->
+
+                            <img
+                                *ngIf="imagePreview"
+                                [src]="imagePreview"
+                                  (error)="onImageError($event)"
+                                width="100"
+                                height="100"
+                                style="object-fit: cover; border-radius: 8px;"
+                                class="mb-3"
+                            />
+
+                            <p-fileUpload
+                                mode="basic"
+                                chooseLabel="Choose Image"
+                                chooseIcon="pi pi-image"
+                                accept="image/*"
+                                [multiple]="false"
+                                [auto]="false"
+                                [customUpload]="true"
+                                (onSelect)="onFileSelect($event)">
+                            </p-fileUpload>
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     </div>
 
@@ -105,6 +145,6 @@
 
                 </form>
 
-        </p-dialog>
+            </p-dialog>
 
         <p-confirmdialog [style]="{ width: '450px' }" />

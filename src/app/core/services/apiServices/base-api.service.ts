@@ -37,16 +37,7 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
         return this.http.get<T>(`${this.endpoint}/${id}`);
     }
 
-    // create(payload: TCreate): Observable<T> {
-    //     return this.http.post<T>(this.endpoint, payload);
-    // }
 
-    // update(id: number, payload: TUpdate): Observable<T> {
-    //     return this.http.put<T>(
-    //         `${this.endpoint}/${id}`,
-    //         payload
-    //     );
-    // }
 
     create(payload: TCreate | FormData): Observable<T> {
         return this.http.post<T>(
@@ -76,4 +67,6 @@ export abstract class BaseApiService<T, TCreate, TUpdate> {
             {}
         );
     }
+
+
 }

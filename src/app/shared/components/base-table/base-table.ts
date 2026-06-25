@@ -12,6 +12,14 @@ import { TableColumn } from '../../models/table-column.model';
 import { TableAction, ActionType, ActionEvent } from '../../models/table-action.model';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonSeverity } from 'primeng/button';
+import { environment } from '@/app/environments/environment';
+import { signal } from '@angular/core';
+import { TablePageEvent } from 'primeng/table';
+import { TextTransformPipe } from '../../pipes/text-transform-pipe';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+
 @Component({
     selector: 'app-base-table',
     standalone: true,
@@ -24,12 +32,32 @@ import { ButtonSeverity } from 'primeng/button';
         InputTextModule,
         InputIconModule,
         IconFieldModule,
-        TooltipModule
+        TooltipModule,
+        TextTransformPipe
+
     ],
     templateUrl: './base-table.html',
     styleUrl: './base-table.scss'
 })
 export class BaseTableComponent<T> {
+
+
+    @Output()
+    pageChange = new EventEmitter<{
+        page: number;
+        pageSize: number;
+    }>();
+
+    onPageChange(event: TablePageEvent): void {
+
+        const page = Math.floor((event.first ?? 0) / (event.rows ?? 10)) + 1;
+
+        this.pageChange.emit({
+            page: page,
+            pageSize: event.rows ?? 10
+        });
+    }
+
 
     @ViewChild('dt')
     dt!: Table;
@@ -48,9 +76,8 @@ export class BaseTableComponent<T> {
 
     @Input()
     totalRecords = 0;
+    @Input() rows = 10;
 
-    @Input()
-    rows = 10;
 
     @Input()
     rowsPerPageOptions = [10, 20, 30];
@@ -67,28 +94,30 @@ export class BaseTableComponent<T> {
     @Output()
     search = new EventEmitter<string>();
 
-    @Output()
-    pageChange = new EventEmitter<any>();
+
+
 
 
     @Output()
     actionClick = new EventEmitter<ActionEvent<T>>();
 
-    readonly BASE_URL = 'http://localhost:8080';
+    readonly BASE_URL = environment.apiUrlImage;
+    readonly NO_IMAGE = 'http://localhost:4200/img/no-image.jpg';
+    getImageUrl(path: string | null): string {
 
-    getImageUrl(path: string): string {
         if (!path) {
-            return 'assets/no-image.png';
+            return this.NO_IMAGE;
         }
-
         return `${this.BASE_URL}/${path}`;
     }
 
     onImageError(event: Event): void {
         const img = event.target as HTMLImageElement;
-        img.src = 'assets/no-image.png';
+        if (!img.src.endsWith(this.NO_IMAGE)) {
+            img.onerror = null;
+            img.src = this.NO_IMAGE;
+        }
     }
-
 
     onAction(action: ActionType, row: T): void {
         this.actionClick.emit({
@@ -98,22 +127,32 @@ export class BaseTableComponent<T> {
     }
 
 
+
+
+
+    private searchSubject = new Subject<string>();
+
     globalSearch = '';
+    ngOnInit() {
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(value => {
+            this.search.emit(value);
+        });
+    }
 
     onSearch(event: Event) {
-
-        const value =
-            (event.target as HTMLInputElement).value;
-
+        const value = (event.target as HTMLInputElement).value;
         this.globalSearch = value;
-
-        this.search.emit(value);
+        this.searchSubject.next(value);
     }
 
 
 
-    exportCSV() {
 
+
+    exportCSV() {
         this.dt.columns =
             this.columns
                 .filter(x => x.exportable !== false)

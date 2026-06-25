@@ -1,8 +1,11 @@
-
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { FileUploadModule } from 'primeng/fileupload';
+import { ToastModule } from 'primeng/toast';
 import { BaseTableComponent } from '@/app/shared/components/base-table/base-table';
 import { TableColumn } from '@/app/shared/models/table-column.model';
 import { TableAction } from '@/app/shared/models/table-action.model';
-import { Component, OnInit, signal, ViewChild, inject, computed, } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { SubCategoriesService } from '@/app/core/services/admin/ecom/sub-categories/sub-categories';
 import { CategoriesService } from '@/app/core/services/admin/ecom/categories/categories';
@@ -12,10 +15,8 @@ import { AlertService } from '@/app/core/services/alert/alert';
 import { BaseCrudComponent } from '@/app/shared/components/baseCrud/base-crud.component';
 import { ISubCategory } from '@/app/core/models/Ecom/sub-category/sub-category.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RippleModule } from 'primeng/ripple';
-import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { RatingModule } from 'primeng/rating';
 import { TextareaModule } from 'primeng/textarea';
@@ -23,22 +24,25 @@ import { SelectModule } from 'primeng/select';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormErrorDirective } from '@/app/shared/validation/form-error.directive';
 import { ValidationSummaryComponent } from '@/app/shared/validation/validation-summary.component';
-import { takeUntil } from 'rxjs/operators';
-import { forkJoin, Subject } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
-import { tap } from 'rxjs/operators';
-import { combineLatest, of } from 'rxjs';
-import { Router } from '@angular/router';
-import { ActionType } from '@/app/shared/models/table-action.model';
+import { switchMap, tap } from 'rxjs/operators';
+import { combineLatest, } from 'rxjs';
 import { ActionEvent } from '@/app/shared/models/table-action.model';
-import { Signal } from '@angular/core';
+import { environment } from '@/app/environments/environment';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventEmitter } from '@angular/core';
+import { map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CapitalizePipePipe } from '@/app/shared/pipes/capitalize-pipe-pipe';
+import { Subject } from 'rxjs';
+
 @Component({
     standalone: true,
     imports: [
@@ -48,7 +52,6 @@ import { Signal } from '@angular/core';
         CommonModule,
         FormsModule,
         RippleModule,
-
         ToastModule,
         ToolbarModule,
         RatingModule,
@@ -63,6 +66,9 @@ import { Signal } from '@angular/core';
         FormErrorDirective,
         ValidationSummaryComponent,
         BaseTableComponent,
+        FileUploadModule,
+        ProgressSpinner,
+        CapitalizePipePipe,
     ],
 
 
@@ -75,68 +81,84 @@ import { Signal } from '@angular/core';
 
 
 export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
+
+
     private fb = inject(FormBuilder);
     private subcategoriesService = inject(SubCategoriesService);
     private categoriesService = inject(CategoriesService);
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
-    private router = inject(Router);
+    private cdr = inject(ChangeDetectorRef);
+
+    private destroyRef = inject(DestroyRef);
     handleDialog: boolean = false;
-    subcategory!: ISubCategory;
     submitted: boolean = false;
     selectedCheckBox!: ISubCategory[] | null;
-    private destroy$ = new Subject<void>();
-    private searchSubject = new Subject<string>();
     search = signal('');
     refreshTrigger = signal(0);
     isEditMode = false;
     header: string = "category Details"
     categories = signal<any[]>([]);
     selectedFile: File | null = null;
-    imagePreview: string | ArrayBuffer | null = null;
-
-
-
+    imagePreview: string | null = null;
+    page = signal(1);
+    pageSize = signal(10);
+    totalRecords = signal(0);
+    private searchSubject = new Subject<string>();
+    readonly BASE_URL = environment.apiUrlImage;
+    readonly NO_IMAGE = 'http://localhost:4200/img/no-image.jpg';
     override load(): void {
-        this.refreshTrigger.update(v => v + 1);
+        this.refreshData();
     }
+
+
+
+
+
     ngOnInit() {
-        this.loadCatgories();
+        this.loadCategories();
     }
 
-    refreshcategorys(): void {
-        this.search.set(this.search());
+    onSearch(value: string) {
+        this.search.set(value);
+    }
+    onPageChange(event: { page: number; pageSize: number; }) {
+        this.page.set(event.page);
+        this.pageSize.set(event.pageSize);
     }
 
 
 
 
-    imageLoadingMap: Record<number, boolean> = {};
-
-    onImageLoad(id: number): void {
-        this.imageLoadingMap[id] = false;
+    private resetForm(): void {
+        this.handleForm.reset();
+        this.imagePreview = null;
+        this.selectedFile = null;
     }
 
-    onImageStart(id: number): void {
-        this.imageLoadingMap[id] = true;
+    private refreshData(): void {
+        this.refreshTrigger.update(v => v + 1);
     }
 
     onImageError(event: Event): void {
-        (event.target as HTMLImageElement).src =
-            'assets/no-image.png';
+        const img = event.target as HTMLImageElement;
+        if (!img.src.includes('no-image.png')) {
+            img.src = this.NO_IMAGE;
+        }
     }
-    onFileSelected(event: any) {
-        const file = event.target.files[0];
+
+    onFileSelect(event: any) {
+        const file = event.files[0];
         if (!file) return;
-
         this.selectedFile = file;
-
         const reader = new FileReader();
         reader.onload = () => {
             this.imagePreview = reader.result as string;
+            this.cdr.detectChanges();
         };
         reader.readAsDataURL(file);
     }
+
     columns: TableColumn[] = [
 
         {
@@ -158,7 +180,8 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
         {
             field: 'image',
             header: 'Sub Category Image',
-            sortable: true
+            sortable: true,
+            type: 'image'
         },
 
 
@@ -192,8 +215,6 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
 
     ];
 
-
-
     handleAction(event: ActionEvent<ISubCategory>): void {
         const category = event.row;
         switch (event.action) {
@@ -213,42 +234,50 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
 
 
 
-
-
-    onSearch(event: Event) {
-        this.search.set((event.target as HTMLInputElement).value);
-    }
-
     subcategories = toSignal(
-        toObservable(
-            computed(() => ({
-                search: this.search(),
-                refresh: this.refreshTrigger()
-            }))
-        ).pipe(
-            debounceTime(300),
-            switchMap(({ search }) =>
-                this.subcategoriesService.getAll(1, 10, search)
+        combineLatest([
+            toObservable(this.search),
+            toObservable(this.page),
+            toObservable(this.pageSize),
+            toObservable(this.refreshTrigger)
+        ]).pipe(
+            switchMap(([search, page, pageSize]) =>
+                this.subcategoriesService.getAll(
+                    page,
+                    pageSize,
+                    search
+                )
             ),
+
             tap(res => {
-                console.log('API Response:', res);
-                console.log('Data:', res.data);
+
+                this.totalRecords.set(
+                    res.totalRecords
+                );
+
             }),
+
             map(res => res.data ?? [])
+
         ),
-        { initialValue: [] }
+        {
+            initialValue: []
+        }
     );
 
-
-
-    loadCatgories() {
-        this.categoriesService.getAll(1, 100, '').subscribe({
-            next: (res: any) => {
-                this.categories.set(res.data || []);
-                console.log(res.data);
-            }
-        });
+    loadCategories() {
+        this.categoriesService
+            .getDropdown()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef)
+            )
+            .subscribe({
+                next: (res) => {
+                    this.categories.set(res);
+                }
+            });
     }
+
 
     handleForm = this.fb.nonNullable.group({
         categoryId: this.fb.control<number | null>(null, Validators.required),
@@ -262,6 +291,7 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
         this.selectedId = null;
         this.submitted = false;
         this.handleForm.reset();
+        this.resetForm();
         this.handleDialog = true;
     }
 
@@ -270,23 +300,27 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
         this.submitted = false;
         this.selectedId = null;
         this.handleForm.reset();
+        this.resetForm();
     }
 
-    handleEdit(subcategory: ISubCategory) {
 
+    handleEdit(item: ISubCategory) {
         this.isEditMode = true;
-        this.selectedId = subcategory.id;
-
+        this.selectedId = item.id;
         this.handleForm.patchValue({
-            categoryId: subcategory.categoryId ?? null,
-            name: subcategory.name,
-            description: subcategory.description ?? ''
+            categoryId: Number(item.categoryId),
+            name: item.name,
+            description: item.description
         });
-
-
+        this.imagePreview = item.image
+            ? `${this.BASE_URL}/${item.image}`
+            : this.NO_IMAGE;
 
         this.handleDialog = true;
+        console.log('Selected Category:', item.categoryId);
+        console.log('Categories:', this.categories());
     }
+
 
     handleSubmit() {
         this.submitted = true;
@@ -319,12 +353,17 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
             : this.subcategoriesService.create(
                 formData
             );
-
         req.subscribe({
             next: () => {
                 this.alert.success('Saved Successfully');
                 this.handleDialog = false;
-                this.refreshTrigger.update(v => v + 1);
+                this.refreshData();
+                this.resetForm();
+                this.imagePreview = null;
+                this.selectedFile = null;
+            },
+            error: () => {
+                this.alert.error('Something went wrong');
             }
         });
     }
@@ -339,13 +378,12 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
                 const deleteRequests = this.selectedCheckBox!.map(subcategory =>
                     this.subcategoriesService.delete(subcategory.id)
                 );
-
                 forkJoin(deleteRequests).subscribe({
                     next: () => {
                         this.alert.success('subcategory deleted successfully');
                         this.selectedCheckBox = null;
-                        this.refreshcategorys();
-                        this.refreshTrigger.update(v => v + 1);
+                        this.refreshData();
+
                     },
                     error: () => {
                         this.alert.error('Some deletions failed');
@@ -356,22 +394,19 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
     }
 
     handleDelete(subcategory: ISubCategory) {
-
         this.alert.confirm(
             `Do you want to delete "${subcategory.name}"?`
         ).then(result => {
-
             if (!result.isConfirmed) {
                 return;
             }
-
             this.subcategoriesService.delete(subcategory.id).subscribe({
                 next: () => {
                     this.alert.success(
                         `"${subcategory.name}" deleted successfully`
                     );
 
-                    this.refreshTrigger.update(v => v + 1);
+                    this.refreshData();
                 },
                 error: () => {
                     this.alert.error(
@@ -384,11 +419,9 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
     }
 
     toggleStatus(subcategory: ISubCategory) {
-
         const action = subcategory.status
             ? 'Deactivate'
             : 'Activate';
-
         this.alert.confirm(
             `Do you want to ${action.toLowerCase()} "${subcategory.name}"?`
         ).then(result => {
@@ -405,7 +438,7 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
                             `"${subcategory.name}" ${action}d successfully`
                         );
 
-                        this.refreshTrigger.update(v => v + 1);
+                        this.refreshData();
                     },
                     error: () => {
                         this.alert.error(
@@ -416,6 +449,7 @@ export class SubCategoryComponent extends BaseCrudComponent<ISubCategory> {
 
         });
     }
+
 
 
 }

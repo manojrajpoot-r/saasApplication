@@ -13,4 +13,5 @@ export class SubCategoriesService extends BaseApiService<
 > {
 
     protected endpoint = environment.apiUrl + '/SubCategory';
+
 }
