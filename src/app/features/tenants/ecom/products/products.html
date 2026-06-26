@@ -1,1 +1,232 @@
-<p>products works!</p>
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="handleDeleteselected()" [disabled]="!selectedCheckBox || !selectedCheckBox.length" />
+            </ng-template>
+
+
+        </p-toolbar>
+
+
+
+
+        <app-base-table
+            [data]="products()"
+            [columns]="columns"
+            [actions]="actions"
+            [selection]="selectedCheckBox ?? []"
+            (selectionChange)="selectedCheckBox = $event"
+             (search)="onSearch($event)"
+            (actionClick)="handleAction($event)"
+            [totalRecords]="totalRecords()"
+            (pageChange)="onPageChange($event)">
+
+        </app-base-table>
+
+
+            <p-dialog
+                [(visible)]="handleDialog"
+                [style]="{ width: '450px' }"
+                header={{header}}
+                [modal]="true">
+
+                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
+
+                    <!-- BODY -->
+
+                    <div class="flex flex-col gap-6">
+                        
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
+                                Category
+                            </label>
+
+                            <p-select
+                                [options]="categories()"
+                                optionLabel="name"
+                                optionValue="id"
+                                formControlName="categoryId"
+                                placeholder="Select Category"
+                                class="w-full">
+                            </p-select>
+                        </div>
+
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="subcategory">
+                               Sub Category
+                            </label>
+
+                            <p-select
+                                [options]="subCategories()"
+                                optionLabel="name"
+                                optionValue="id"
+                                formControlName="subCategoryId"
+                                placeholder="Select Sub Category"
+                                class="w-full">
+                            </p-select>
+                        </div>
+
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
+                                Brands
+                            </label>
+
+                            <p-select
+                                [options]="brands()"
+                                optionLabel="name"
+                                optionValue="id"
+                                formControlName="brandId"
+                                placeholder="Select Brand"
+                                class="w-full">
+                            </p-select>
+                        </div>
+
+
+                                <div>
+                                    <label class="block font-bold mb-3">
+                                     Name
+                                    </label>
+                                        <input pInputText
+                                        formControlName="name"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.name"
+                                        fieldName="Name" />
+                                </div>
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                     Price
+                                    </label>
+                                        <input pInputText
+                                        formControlName="price"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.price"
+                                        fieldName="Price" />
+                                </div>
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                     Discoun tPercentage 
+                                    </label>
+                                        <input pInputText
+                                        formControlName="discountPercentage"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.discountPercentage"
+                                        fieldName="discountPercentage" />
+                                </div>
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                     Discount Price
+                                    </label>
+                                        <input pInputText
+                                        formControlName="discountPrice"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.discountPrice"
+                                        fieldName="discountPrice" />
+                                </div>
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                     Quantity
+                                    </label>
+                                        <input pInputText
+                                        formControlName="quantity"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.quantity"
+                                        fieldName="quantity" />
+                                </div>
+
+
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                    shortDescription
+                                    </label>
+                                        <input pInputText
+                                        formControlName="shortDescription"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.shortDescription"
+                                        fieldName="shortDescription" />
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold mb-3">
+                                    Description
+                                    </label>
+                                        <input pInputText
+                                        formControlName="description"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.description"
+                                        fieldName="Description" />
+                                </div>
+
+                        <div>
+                            <label class="block font-bold mb-3">
+                                Image
+                            </label>
+
+                            <!-- Preview -->
+
+                            <img
+                                *ngIf="imagePreview"
+                                [src]="imagePreview"
+                                  (error)="onImageError($event)"
+                                width="100"
+                                height="100"
+                                style="object-fit: cover; border-radius: 8px;"
+                                class="mb-3"
+                            />
+
+                            <p-fileUpload
+                                mode="basic"
+                                chooseLabel="Choose Image"
+                                chooseIcon="pi pi-image"
+                                accept="image/*"
+                                [multiple]="false"
+                                [auto]="false"
+                                [customUpload]="true"
+                                (onSelect)="onFileSelect($event)">
+                            </p-fileUpload>
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+                    <!-- FOOTER -->
+
+                    <div class="flex justify-end gap-2 mt-5">
+
+                        <p-button
+                            label="Cancel"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            type="button"
+                            (click)="hideDialog()">
+                        </p-button>
+
+                        <p-button
+                            [label]="selectedId ? 'Update' : 'Save'"
+                            icon="pi pi-check"
+                            type="submit">
+                        </p-button>
+
+                    </div>
+
+                </form>
+
+            </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

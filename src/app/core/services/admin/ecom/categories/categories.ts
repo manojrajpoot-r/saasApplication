@@ -25,7 +25,7 @@ export class CategoriesService extends BaseApiService<
     getDropdown() {
         return this.http
             .get<ApiResponse<ICategory[]>>(
-                `${environment.apiUrl}/Category/frontend`
+                `${this.endpoint}/frontend`
             )
             .pipe(
                 map(res => res.data)
