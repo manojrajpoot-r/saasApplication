@@ -1,1 +1,130 @@
-<p>product-varient works!</p>
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="handleDeleteselected()" [disabled]="!selectedCheckBox || !selectedCheckBox.length" />
+            </ng-template>
+
+
+        </p-toolbar>
+
+
+
+
+        <app-base-table
+            [data]="products()"
+            [columns]="columns"
+            [actions]="actions"
+            [selection]="selectedCheckBox ?? []"
+            (selectionChange)="selectedCheckBox = $event"
+             (search)="onSearch($event)"
+            (actionClick)="handleAction($event)"
+            [totalRecords]="totalRecords()"
+            (pageChange)="onPageChange($event)">
+
+        </app-base-table>
+
+
+            <p-dialog
+                [(visible)]="handleDialog"
+                [style]="{ width: '450px' }"
+                header={{header}}
+                [modal]="true">
+
+                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
+
+                    <!-- BODY -->
+
+                    <div class="flex flex-col gap-6">
+
+
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
+                                Products
+                            </label>
+                            <p-select
+                                    formControlName="productId"
+                                    [options]="products()"
+                                    optionLabel="name"
+                                    optionValue="id"
+                                    placeholder="Select Products"
+                                     class="w-full">
+                                </p-select>
+                        </div>
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
+                               Colors
+                            </label>
+                            <p-select
+                                formControlName="colorId"
+                                [options]="colors()"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Select Color"
+                                class="w-full">
+                            </p-select>
+                        </div>
+
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="category">
+                                Sizes
+                            </label>
+
+                            <p-select
+                                [options]="sizes()"
+                                optionLabel="name"
+                                optionValue="id"
+                                formControlName="sizeId"
+                                placeholder="Select Size"
+                                class="w-full">
+                            </p-select>
+                        </div>
+
+
+                                <div>
+                                    <label class="block font-bold mb-3">
+                                     Price
+                                    </label>
+                                        <input pInputText
+                                        formControlName="price"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.price"
+                                        fieldName="price" />
+                                </div>
+                                    <div>
+                                    <label class="block font-bold mb-3">
+                                     Stock
+                                    </label>
+                                        <input pInputText
+                                        formControlName="stock"
+                                        class="w-full"
+                                        [appFieldError]="handleForm.controls.stock"
+                                        fieldName="Stock" />
+                                </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+
+                    <div class="flex justify-end gap-2 mt-5">
+
+                        <p-button
+                            label="Cancel"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            type="button"
+                            (click)="hideDialog()">
+                        </p-button>
+
+                        <p-button
+                            [label]="selectedId ? 'Update' : 'Save'"
+                            icon="pi pi-check"
+                            type="submit">
+                        </p-button>
+
+                    </div>
+
+                </form>
+
+            </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

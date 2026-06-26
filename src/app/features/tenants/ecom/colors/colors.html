@@ -1,1 +1,84 @@
-<p>colors works!</p>
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="handleDeleteselected()" [disabled]="!selectedCheckBox || !selectedCheckBox.length" />
+            </ng-template>
+
+
+        </p-toolbar>
+
+
+
+
+        <app-base-table
+            [data]="colors()"
+            [columns]="columns"
+            [actions]="actions"
+            [selection]="selectedCheckBox ?? []"
+            (selectionChange)="selectedCheckBox = $event"
+            (search)="search.set($event)"
+            (actionClick)="handleAction($event)"
+             (pageChange)="onPageChange($event)">
+        </app-base-table>
+
+
+        <p-dialog
+            [(visible)]="handleDialog"
+            [style]="{ width: '450px' }"
+            header={{header}}
+            [modal]="true">
+
+                <form [formGroup]="handleForm" (ngSubmit)="handleSubmit()">
+
+                    <!-- BODY -->
+
+                    <div class="flex flex-col gap-6">
+
+                        <div>
+                            <label class="block font-bold mb-3">
+                               Color Name
+                            </label>
+                        <input pInputText
+                                formControlName="name"
+                                class="w-full"
+                                [appFieldError]="handleForm.controls.name"
+                                fieldName="Name" />
+                        </div>
+                           <div>
+                            <label class="block font-bold mb-3">
+                               Color Code
+                            </label>
+                        <input pInputText
+                                formControlName="code"
+                                class="w-full"
+                                [appFieldError]="handleForm.controls.code"
+                                fieldName="Code" />
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+
+                    <div class="flex justify-end gap-2 mt-5">
+
+                        <p-button
+                            label="Cancel"
+                            icon="pi pi-times"
+                            severity="secondary"
+                            type="button"
+                            (click)="hideDialog()">
+                        </p-button>
+
+                        <p-button
+                            [label]="selectedId ? 'Update' : 'Save'"
+                            icon="pi pi-check"
+                            type="submit">
+                        </p-button>
+
+                    </div>
+
+                </form>
+
+        </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />

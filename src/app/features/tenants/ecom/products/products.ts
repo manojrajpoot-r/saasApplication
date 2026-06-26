@@ -8,7 +8,7 @@ import { TableColumn } from '@/app/shared/models/table-column.model';
 import { TableAction } from '@/app/shared/models/table-action.model';
 import { Component, OnInit, ViewChild, inject, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IProduct,IProductRequest } from '@/app/core/models/Ecom/products/product.model';
+import { IProduct, IProductRequest } from '@/app/core/models/Ecom/products/product.model';
 import { ProductsService } from '@/app/core/services/admin/ecom/products/products';
 import { ImageModule } from 'primeng/image';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -91,9 +91,9 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
     private alert = inject(AlertService);
     private confirm = inject(ConfirmationService);
     private cdr = inject(ChangeDetectorRef);
-    private categoriesService =inject(CategoriesService);
-    private subCategoriesService =inject(SubCategoriesService);
-    private brandsService =inject(BrandsService);
+    private categoriesService = inject(CategoriesService);
+    private subCategoriesService = inject(SubCategoriesService);
+    private brandsService = inject(BrandsService);
 
     private destroyRef = inject(DestroyRef);
     handleDialog: boolean = false;
@@ -121,8 +121,8 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
 
     ngOnInit() {
         this.loadCategories();
-       this.loadSubCategories(),
-       this.loadbrands()
+        // this.loadSubCategories(),
+        this.loadbrands()
     }
 
     onSearch(value: string) {
@@ -167,7 +167,24 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
 
     columns: TableColumn[] = [
 
-      
+        {
+            field: 'categoryName',
+            header: 'Category Name',
+            sortable: true
+        },
+        {
+            field: 'subCategoryName',
+            header: 'Sub Category Name',
+            sortable: true
+        },
+
+        {
+            field: 'brandName',
+            header: 'Brand Name',
+            sortable: true
+        },
+
+
         {
             field: 'name',
             header: 'Name',
@@ -175,13 +192,24 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
         },
 
         {
-            field: 'description',
-            header: 'Description',
+            field: 'price',
+            header: 'Price',
+            sortable: true
+        },
+
+        {
+            field: 'discountPercentage',
+            header: 'Discount Percentage',
+            sortable: true
+        },
+        {
+            field: 'discountPrice',
+            header: 'Discount Price',
             sortable: true
         },
         {
             field: 'image',
-            header: 'Sub product Image',
+            header: 'Product Image',
             sortable: true,
             type: 'image'
         },
@@ -250,24 +278,18 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
                     search
                 )
             ),
-
             tap(res => {
-
-                this.totalRecords.set(
-                    res.totalRecords
-                );
-
+                this.totalRecords.set(res.totalRecords);
+                console.log('PrrData:', res.data);
             }),
-
             map(res => res.data ?? [])
-
         ),
         {
             initialValue: []
         }
     );
 
- 
+
     loadCategories() {
         this.categoriesService
             .getDropdown()
@@ -277,23 +299,27 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             .subscribe({
                 next: (res) => {
                     this.categories.set(res);
-                  
+
                 }
             });
     }
 
-    loadSubCategories() {
-        this.subCategoriesService
-            .getDropdown()
-            .pipe(
-                takeUntilDestroyed(this.destroyRef)
-            )
-            .subscribe({
-                next: (res) => {
-                    this.subCategories.set(res);
-                }
-            });
-    }
+
+
+
+    // loadSubCategories() {
+    //     this.subCategoriesService
+    //         .getDropdown()
+    //         .pipe(
+    //             takeUntilDestroyed(this.destroyRef)
+    //         )
+    //         .subscribe({
+    //             next: (res) => {
+    //                 this.subCategories.set(res);
+    //             }
+    //         });
+    // }
+
     loadbrands() {
         this.brandsService
             .getDropdown()
@@ -303,25 +329,27 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             .subscribe({
                 next: (res) => {
                     this.brands.set(res);
-                    
+
                 }
             });
     }
 
 
     handleForm = this.fb.nonNullable.group({
-       categoryId: this.fb.control<number | null>(null, Validators.required),
-       subCategoryId: this.fb.control<number | null>(null, Validators.required),
-       brandId: this.fb.control<number | null>(null, Validators.required),
-       price:this.fb.control<string>('', Validators.required),
-       discountPercentage: this.fb.control<string>('', Validators.required),
-        discountPrice: this.fb.control<string>('', Validators.required),
-        quantity:  this.fb.control<number | null>(null, Validators.required),
+        categoryId: this.fb.control<number | null>(null, Validators.required),
+        subCategoryId: this.fb.control<number | null>(null, Validators.required),
+        brandId: this.fb.control<number | null>(null, Validators.required),
+        price: this.fb.control<string>('', Validators.required),
+        discountPercentage: this.fb.control<string>('', Validators.required),
+
+        quantity: this.fb.control<number | null>(null, Validators.required),
         name: this.fb.control<string>('', Validators.required),
-        shortDescription:this.fb.control<string>(''),
+        shortDescription: this.fb.control<string>(''),
         description: this.fb.control<string>(''),
         image: this.fb.control<string | null>(null)
     });
+
+
 
     openNew() {
         this.isEditMode = false;
@@ -340,21 +368,30 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
         this.resetForm();
     }
 
-
     handleEdit(item: IProduct) {
         this.isEditMode = true;
         this.selectedId = item.id;
-        this.handleForm.patchValue({
-          categoryId: Number(item.categoryId),
-          subCategoryId: Number(item.subCategoryId),
-          brandId: Number(item.brandId),
-          price:item.price,
-          discountPercentage:item.discountPercentage,
-          quantity:Number(item.quantity),
-          name: item.name,
-          shortDescription:item.shortDescription,
-          description: item.description
-        });
+
+        // Pehle subcategories load karo
+        this.subCategoriesService.getByCategory(Number(item.categoryId))
+            .subscribe(res => {
+
+                this.subCategories.set(res);
+
+                // Phir form patch karo
+                this.handleForm.patchValue({
+                    categoryId: Number(item.categoryId),
+                    subCategoryId: Number(item.subCategoryId),
+                    brandId: Number(item.brandId),
+                    price: item.price,
+                    discountPercentage: item.discountPercentage,
+                    quantity: Number(item.quantity),
+                    name: item.name,
+                    shortDescription: item.shortDescription,
+                    description: item.description
+                });
+            });
+
         this.imagePreview = item.image
             ? `${this.BASE_URL}/${item.image}`
             : this.NO_IMAGE;
@@ -362,20 +399,33 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
         this.handleDialog = true;
     }
 
+    // onchange subcategory
+    onCategoryChange(categoryId: number, isEdit = false) {
+        this.subCategoriesService.getByCategory(categoryId)
+            .subscribe(res => {
+                this.subCategories.set(res);
+
+                if (!isEdit) {
+                    this.handleForm.patchValue({
+                        subCategoryId: null
+                    });
+                }
+            });
+    }
 
     handleSubmit() {
         this.submitted = true;
         if (this.handleForm.invalid) return;
         const formData = new FormData();
-         formData.append(
+        formData.append(
             'categoryId',
             this.handleForm.value.categoryId!.toString()
         );
-         formData.append(
+        formData.append(
             'subCategoryId',
             this.handleForm.value.subCategoryId!.toString()
         );
-         formData.append(
+        formData.append(
             'brandId',
             this.handleForm.value.brandId!.toString()
         );
@@ -387,7 +437,7 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             'price',
             this.handleForm.value.price!
         );
-         formData.append(
+        formData.append(
             'discountPercentage',
             this.handleForm.value.discountPercentage!
         );
@@ -395,12 +445,12 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             'quantity',
             this.handleForm.value.quantity!.toString()
         );
-         formData.append(
+        formData.append(
             'shortDescription',
             this.handleForm.value.shortDescription!
         );
-      
-      
+
+
         formData.append(
             'description',
             this.handleForm.value.description!

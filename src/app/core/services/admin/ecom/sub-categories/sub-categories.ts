@@ -19,13 +19,18 @@ export class SubCategoriesService extends BaseApiService<
 > {
 
     protected endpoint = environment.apiUrl + '/SubCategory';
-       getDropdown() {
-            return this.http
-                .get<ApiResponse<ISubCategory[]>>(
-                    `${this.endpoint}/frontend`
-                )
-                .pipe(
-                    map(res => res.data)
-                );
-        }
+    getDropdown() {
+        return this.http
+            .get<ApiResponse<ISubCategory[]>>(`${this.endpoint}/frontend`)
+            .pipe(map(res => res.data));
+    }
+
+    getByCategory(categoryId: number) {
+        return this.http.get<ISubCategory[]>(
+            `${this.endpoint}/by-category/${categoryId}`
+        );
+
+
+
+    }
 }
