@@ -1,7 +1,6 @@
-
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8080/api',
+    apiUrl: 'http://ecom.saas.com:8080/api',
 
-    apiUrlImage: 'http://localhost:8080'
+    apiUrlImage: 'http://ecom.saas.com:8080'
 };

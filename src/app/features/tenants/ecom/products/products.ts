@@ -45,6 +45,8 @@ import { Subject } from 'rxjs';
 import { CategoriesService } from '@/app/core/services/admin/ecom/categories/categories';
 import { SubCategoriesService } from '@/app/core/services/admin/ecom/sub-categories/sub-categories';
 import { BrandsService } from '@/app/core/services/admin/ecom/brands/brands';
+import { Router } from '@angular/router';
+
 
 @Component({
     standalone: true,
@@ -94,6 +96,7 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
     private categoriesService = inject(CategoriesService);
     private subCategoriesService = inject(SubCategoriesService);
     private brandsService = inject(BrandsService);
+    private router = inject(Router);
 
     private destroyRef = inject(DestroyRef);
     handleDialog: boolean = false;
@@ -243,6 +246,14 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             tooltip: 'Delete'
         },
 
+        {
+           action: 'view',
+            icon: 'pi pi-eye',
+            severity: 'success',
+            tooltip: 'Product Gallery',
+            visible: true
+        }
+
     ];
 
     handleAction(event: ActionEvent<IProduct>): void {
@@ -259,9 +270,17 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
             case 'toggleStatus':
                 this.toggleStatus(product);
                 break;
+
+                case 'view':
+                this.productGallary(product);
+                break;
         }
     }
 
+    productGallary(product: IProduct): void {
+      this.router.navigate(['/tenant/product-gallery', product.id]);
+    }
+    
 
 
     products = toSignal(
@@ -307,18 +326,7 @@ export class ProductComponent extends BaseCrudComponent<IProduct> {
 
 
 
-    // loadSubCategories() {
-    //     this.subCategoriesService
-    //         .getDropdown()
-    //         .pipe(
-    //             takeUntilDestroyed(this.destroyRef)
-    //         )
-    //         .subscribe({
-    //             next: (res) => {
-    //                 this.subCategories.set(res);
-    //             }
-    //         });
-    // }
+
 
     loadbrands() {
         this.brandsService

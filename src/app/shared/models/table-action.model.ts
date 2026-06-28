@@ -5,7 +5,8 @@ export type ActionType =
     | 'assignPermission'
     | 'renewSubscription'
     | 'subscribe'
-    |'passwordChange';
+    |'passwordChange'
+    |    'view';
 
 export type SeverityType =
     | 'secondary'

@@ -20,7 +20,17 @@ export class ProductsService extends BaseApiService<
 
     protected endpoint = environment.apiUrl + '/Products';
 
-    getDropdown() {
+    getFeatures() {
+        return this.http
+            .get<ApiResponse<IProduct[]>>(
+                `${this.endpoint}/features`
+            )
+            .pipe(
+                map(res => res.data)
+            );
+    }
+
+       getLatest() {
         return this.http
             .get<ApiResponse<IProduct[]>>(
                 `${this.endpoint}/latest`

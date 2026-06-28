@@ -1,0 +1,73 @@
+<p-toolbar class="mb-4">
+    <ng-template pTemplate="start">
+        <p-button
+            label="Add Images"
+            icon="pi pi-plus"
+            (onClick)="openNew()">
+        </p-button>
+    </ng-template>
+</p-toolbar>
+<p-dialog
+    header="Upload Images"
+    [(visible)]="handleDialog"
+    [modal]="true"
+    [style]="{width:'500px'}">
+
+    <p-fileUpload
+        mode="advanced"
+        accept="image/*"
+        [multiple]="true"
+        [customUpload]="true"
+        [showUploadButton]="false"
+        [showCancelButton]="false"
+        (onSelect)="onFileSelect($event)">
+    </p-fileUpload>
+
+    <div class="flex justify-content-end mt-4">
+        <p-button
+            label="Upload"
+            icon="pi pi-upload"
+            (click)="handleSubmit()">
+        </p-button>
+    </div>
+
+</p-dialog>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    @for (item of productImages(); track item.id) {
+
+        <p-card>
+
+            <img
+                [src]="BASE_URL + '/' + item.imageUrl"
+                (error)="onImageError($event)"
+                class="w-full h-56 object-cover rounded-lg">
+
+            <div class="flex justify-between items-center mt-3">
+
+                @if (item.isMain) {
+                    <p-tag severity="success" value="Primary"></p-tag>
+                }
+
+                <div class="flex gap-2">
+                    <p-button
+                        icon="pi pi-star"
+                        severity="warn"
+                        [outlined]="!item.isMain"
+                        (click)="setPrimary(item)">
+                    </p-button>
+
+                    <p-button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        (click)="handleDelete(item)">
+                    </p-button>
+                </div>
+
+            </div>
+
+        </p-card>
+
+    }
+
+</div>

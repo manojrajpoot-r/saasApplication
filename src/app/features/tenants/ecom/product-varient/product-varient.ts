@@ -256,7 +256,7 @@ export class ProductVarientComponent extends BaseCrudComponent<IProductVarient> 
 
     loadProducts() {
         this.productService
-            .getDropdown()
+            .getFeatures()
             .pipe(
                 takeUntilDestroyed(this.destroyRef)
             )

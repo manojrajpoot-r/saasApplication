@@ -98,6 +98,15 @@ export const TENANT_ROUTES: Routes = [
                     import('../tenants/ecom/products/products')
                         .then(m => m.ProductComponent)
             },
+
+            {
+
+             path: 'product-gallery/:id',
+                loadComponent: () =>
+                    import('../tenants/ecom/product-gallery/product-gallery')
+                        .then(m => m.ProductGalleryComponent)
+            },
+
            
 
             {

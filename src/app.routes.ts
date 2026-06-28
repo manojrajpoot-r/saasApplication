@@ -4,10 +4,13 @@ import { Notfound } from './app/pages/notfound/notfound';
 
 export const appRoutes: Routes = [
 
-    { path: 'landing', component: Landing },
-    { path: 'notfound', component: Notfound },
+    {
+        path: '',
+        loadChildren: () =>
+            import('./app/features/routes/website.routes')
+                .then(m => m.WEBSITE_ROUTES)
+    },
 
-    // Admin Login
     {
         path: 'admin',
         loadChildren: () =>
@@ -15,7 +18,6 @@ export const appRoutes: Routes = [
                 .then(m => m.AUTH_ROUTES)
     },
 
-    // Tenant Login
     {
         path: 'tenant',
         loadChildren: () =>
@@ -23,7 +25,6 @@ export const appRoutes: Routes = [
                 .then(m => m.AUTH_ROUTES)
     },
 
-    // Admin Module
     {
         path: 'admin',
         children: [
@@ -36,7 +37,6 @@ export const appRoutes: Routes = [
         ]
     },
 
-    // Tenant Module
     {
         path: 'tenant',
         children: [
@@ -47,12 +47,6 @@ export const appRoutes: Routes = [
                         .then(m => m.TENANT_ROUTES)
             }
         ]
-    },
-
-    {
-        path: '',
-        redirectTo: 'admin/login',
-        pathMatch: 'full'
     },
 
     {

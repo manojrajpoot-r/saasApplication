@@ -12,6 +12,6 @@ export class ProducVarientService extends BaseApiService<
     IProductVarientRequest
 > {
 
-    protected endpoint = environment.apiUrl + '/ProductsVarient';
+    protected endpoint = environment.apiUrl + '/ProductVariant';
 
 }
