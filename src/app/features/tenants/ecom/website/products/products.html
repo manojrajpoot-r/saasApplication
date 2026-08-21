@@ -1,5 +1,25 @@
 <div class="card">
             <div class="font-semibold text-xl mb-4">Carousel</div>
+            <h2>
+
+                {{name()}}
+
+                </h2>
+                <div class="row">
+                    <button (click)="addToCart()">
+                        Add To Cart
+                    </button>
+                </div>
+                <div class="row">
+                    <button (click)="buyNowProduct()"> buy Now</button>
+                </div>
+
+                <div class="row">
+                <input [value]="productName()"
+                    (input)="productName.set(($any($event.target)).value)">
+                </div>
+
+
             <p-carousel [value]="products()" [numVisible]="3" [numScroll]="3" [circular]="false" [responsiveOptions]="carouselResponsiveOptions">
                 <ng-template let-product #item>
                     <div class="border border-surface rounded-border m-2 p-4">

@@ -9,6 +9,7 @@ import { TagModule } from 'primeng/tag';
 import { ProductsService } from '@/app/core/services/admin/ecom/products/products';
 import { IProduct } from '@/app/core/models/Ecom/products/product.model';
 import { environment } from '@/app/environments/environment';
+import { input, output, model } from '@angular/core';
 @Component({
     selector: 'app-products',
     standalone: true,
@@ -31,10 +32,25 @@ export class Products implements OnInit {
     products = signal<IProduct[]>([]);
     loading = signal(false);
 
+
+    name = input('');
+    sendMessage = output<string>();
+    onbyNow = output<string>();
+
+    productName = model('');
+
+
+
+
     readonly BASE_URL = environment.apiUrlImage;
     readonly NO_IMAGE = 'http://ecom.saas.com:8080/img/no-image.jpg';
+    addToCart() {
+        this.sendMessage.emit('Laptop Added Successfully');
+    }
+    buyNowProduct() {
+        this.onbyNow.emit('oreder is successfully');
+    }
 
-  
     galleriaResponsiveOptions = [
         {
             breakpoint: '1024px',
@@ -72,27 +88,27 @@ export class Products implements OnInit {
         }
     ];
 
-  ngOnInit(): void {
-    this.loadProducts();
-  }
+    ngOnInit(): void {
+        this.loadProducts();
+    }
 
-  loadProducts(): void {
+    loadProducts(): void {
 
-    console.log('loadProducts called');
+        console.log('loadProducts called');
 
-    this.productService.getFeatures().subscribe({
-      next: (res) => {
-        console.log('API Success', res);
-        this.products.set(res);
-      },
-      error: (err) => {
-        console.error('API Error', err);
-      },
-      complete: () => {
-        console.log('Completed');
-      }
-    });
-  }
+        this.productService.getFeatures().subscribe({
+            next: (res) => {
+                console.log('API Success', res);
+                this.products.set(res);
+            },
+            error: (err) => {
+                console.error('API Error', err);
+            },
+            complete: () => {
+                console.log('Completed');
+            }
+        });
+    }
 
     getSeverity(status: string) {
         switch (status) {

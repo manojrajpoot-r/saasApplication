@@ -58,7 +58,7 @@ export class LoginComponent {
         this.authService.login(request).subscribe({
 
             next: (res: LoginResponse) => {
-                console.log(res);
+                //console.log(res);
                 this.alertService.success('Login successful!');
 
                 if (this.authService.isPlatformUser()) {

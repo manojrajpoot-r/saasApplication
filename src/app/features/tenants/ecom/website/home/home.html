@@ -1,4 +1,72 @@
 
 
-<app-products>
-    </app-products>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+             <app-products [name]="name" (sendMessage)="receiveMessage($event)" (onbyNow)="buyNow($event)"
+             [(productName)]="productName"></app-products>
+        </div>
+
+        <div class="col-md-12">
+            <div class="cart">
+
+                <h4>{{counter()}}</h4>
+                <h5>{{table()}}</h5>
+                <div class="col-sm-4">
+                    <button class="btn-link btn btn-primary" (click)="increment()">Increment</button>
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn-link" (click)="decrement()">Decrement</button>
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn-link" (click)="reset()">Reset</button>
+                </div>
+            </div>
+       </div>
+
+      <div [class.dark-theme]="true"
+         [class.green-theme]="!isDarkTheme()">
+        <button class="btn-link"  (click)="tooggleTheme()">{{isDarkTheme() ? 'dark theme':'green theme'}}</button>
+
+        </div>
+
+        <button class="btn-link" (click)="onUsername()">click</button>
+        {{username()}}
+
+
+        <button (click)="changeName()">Chane Name</button>
+
+        <!--
+            parent se data -->
+        <h2>{{ message() }}</h2>
+      <!--
+            child se data -->
+            <h5>{{buy_now()}}</h5>
+
+            <!-- model -->
+             <h3>{{productName()}}</h3>
+
+            <h4>{{count()}}</h4>
+            <h1>{{ count() }}</h1>
+
+<button (click)="stopTimer()">
+    Stop Timer
+</button>
+           <h2>{{time()}}</h2>
+    </div>
+ </div>
+
+
+ @for(product of products(); track product.id)
+ {
+    <li>{{product.name}}</li>
+ }
+
+
+
+ @for(user of users(); track user.id)
+ {
+    <li>{{user.name}}</li>
+ }
